@@ -27,7 +27,7 @@ int main()
 
     while (true)
     {
-        system("clear");
+        
         cout << "WELCOME TO CONTACTS APP."<< "\n PLEASE SELECT FROM BELOW MENU WHAT WOULD YOU LIKE TO DO" << endl;
 
         cout << "MENU:\n 0 = SEE CONTACTS\n 1 = SEE CALLS\n 2 = MAKE A CALL\n 3 = ADD A CONTACT\n \
@@ -47,13 +47,22 @@ int main()
             {
                 auto conn = pool.acquire();
                 pqxx::work tx(*conn);
-                system("clear");
+                
 
                 auto contacts = app.getContacts(tx);
 
+                cout << left << setw(3)<< "ID";
+                cout<< "   ";
+                cout << right <<setw(10) <<"Name" << " " << setw(17) <<"Number"<< " ";
+                cout << setw(20) <<"address" << endl;
+
                 for (auto contact : *contacts)
                 {
-
+                    cout <<left << setw(4)<< contact.id;
+                    cout << "   ";
+                    cout << right << setw(10) << contact.name;
+                    cout << " " << setw(27) << contact.number;
+                    cout << " " << setw(25) << contact.address << endl;
                 }
 
                 pool.release(conn);
@@ -65,7 +74,7 @@ int main()
             {
                 auto conn = pool.acquire();
                 pqxx::work tx(*conn);
-                system("clear");
+                
                 app.getCallHistory(tx);
                 pool.release(conn);
                 break;
@@ -75,7 +84,7 @@ int main()
             {
                 auto conn = pool.acquire();
                 pqxx::work tx(*conn);
-                system("clear");
+                
 
                 app.getContacts(tx);
 
@@ -96,7 +105,7 @@ int main()
             {
                 auto conn = pool.acquire();
                 pqxx::work tx(*conn);
-                system("clear");
+                
 
                 cout << "creating new app...\n";
                 cout << "write the name of the contact\n";
@@ -120,7 +129,7 @@ int main()
             {
                 auto conn = pool.acquire();
                 pqxx::work tx(*conn);
-                system("clear");
+                
 
                 cout << "what is the number of the contact you would like to change?\n";
                 string contactToChange;
@@ -140,7 +149,7 @@ int main()
             {
                 auto conn = pool.acquire();
                 pqxx::work tx(*conn);
-                system("clear");
+                
                 app.getCallHistory(tx);
 
                 cout << "enter the ID of the call you would like to delete" << endl;
@@ -158,7 +167,7 @@ int main()
             {
                 auto conn = pool.acquire();
                 pqxx::work tx(*conn);
-                system("clear");
+                
                 app.getContacts(tx);
 
                 cout << "Enter the number of the contact you would like to delete";

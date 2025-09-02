@@ -1,8 +1,8 @@
 #ifndef APPLICATION_HPP
 #define APPLICATION_HPP
 
-#include "Domain/callHistory/callHistory-service.hpp"
-#include "Domain/contact/contact-service.hpp"
+#include "../Domain/callHistory/callHistory-service.hpp"
+#include "../Domain/contact/contact-service.hpp"
 using namespace std;
 
 class application
@@ -23,10 +23,38 @@ public:
 
 };
 
+inline application::application()
+{
+}
+
 inline shared_ptr<vector<contact>> application::getContacts(pqxx::work& tx)
 {
 
     return contactService_->getAllContact(tx);
+}
+
+inline callHistory* application::getCallHistory(pqxx::work&)
+{
+}
+
+inline void application::addContact(pqxx::work&, string& name, string& number)
+{
+}
+
+inline void application::addCallHistory(pqxx::work&, string& callerNumber, string& CalleeNumber)
+{
+}
+
+inline void application::deleteContact(pqxx::work&, string& number)
+{
+}
+
+inline void application::deleteCallHistory(pqxx::work&, int& callId)
+{
+}
+
+inline void application::editContact(pqxx::work&, string& newName, string& number)
+{
 }
 
 #endif // APPLICATION_HPP
