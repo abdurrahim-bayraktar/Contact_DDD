@@ -4,15 +4,15 @@
 #include <string>
 using namespace std;
 
-class Contact
+class contact
 {
     int id;
     string name;
     string number;
     string adress;
 public:
-    Contact();
+    contact();
     int getId();
-    void setId(int id;
+    void setId(int id);
 };
 #endif // CONTACT_HPP
