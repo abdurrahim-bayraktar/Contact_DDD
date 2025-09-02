@@ -25,6 +25,9 @@ public:
 
 inline application::application()
 {
+    auto factory = make_shared<contactFactory>();
+    auto repository = make_shared<contactRepository>();
+    contactService_ = make_shared<contactService>(factory, repository);
 }
 
 inline shared_ptr<vector<contact>> application::getContacts(pqxx::work& tx)

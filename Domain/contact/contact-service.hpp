@@ -22,13 +22,8 @@ class contactService
 
 inline shared_ptr<vector<contact>> contactService::getAllContact(pqxx::work& tx)
 {
-    shared_ptr<vector<contact>> objects = make_shared<vector<contact>>();
-    auto rows =  repository_->getAllRows(tx);
-    for (auto row : *rows)
-    {
-        objects->push_back(factory_->makeContactFromRow(row));
-    }
-    return objects;
+
+    return repository_->getAllRows(tx);
 }
 
 #endif // CONTACT_SERVICE_HPP
