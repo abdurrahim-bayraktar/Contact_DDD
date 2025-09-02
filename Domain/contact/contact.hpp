@@ -6,13 +6,20 @@ using namespace std;
 
 class contact
 {
-    int id;
+public:
+    int id = 0;
     string name;
     string number;
-    string adress;
-public:
+    string address;
+
     contact();
-    int getId();
-    void setId(int id);
+    contact(const string& name, const string& number, const string& address);
+
 };
+
+inline contact::contact(const string& name, const string& number, const string& address):
+                            name(name), number(number), address(address)
+{}
+
+
 #endif // CONTACT_HPP

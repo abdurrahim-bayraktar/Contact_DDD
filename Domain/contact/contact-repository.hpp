@@ -7,5 +7,12 @@ class contactRepository
 {
     public:
     contactRepository();
+    shared_ptr<pqxx::result> getAllRows(pqxx::work& tx);
 };
+
+inline shared_ptr<pqxx::result> contactRepository::getAllRows(pqxx::work& tx)
+{
+    pqxx::result
+}
+
 #endif // CONTACT_REPOSITORY_HPP
