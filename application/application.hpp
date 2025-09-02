@@ -12,7 +12,7 @@ class application
 
 public:
     application();
-    contact* getContacts(pqxx::work&);
+    shared_ptr<vector<contact>> getContacts(pqxx::work&);
     callHistory* getCallHistory(pqxx::work&);
     void addContact(pqxx::work&, string& name, string& number);
     void addCallHistory(pqxx::work&, string& callerNumber, string& CalleeNumber);
@@ -23,7 +23,7 @@ public:
 
 };
 
-inline contact* application::getContacts(pqxx::work& tx)
+inline shared_ptr<vector<contact>> application::getContacts(pqxx::work& tx)
 {
 
     return contactService_->getAllContact(tx);

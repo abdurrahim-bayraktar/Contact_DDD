@@ -12,7 +12,8 @@ class contactRepository
 
 inline shared_ptr<pqxx::result> contactRepository::getAllRows(pqxx::work& tx)
 {
-    pqxx::result
+    shared_ptr<pqxx::result> rows = make_shared<pqxx::result>(tx.exec("SELECT * FROM contact"));
+    return rows;
 }
 
 #endif // CONTACT_REPOSITORY_HPP

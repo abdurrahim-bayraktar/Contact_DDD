@@ -49,7 +49,12 @@ int main()
                 pqxx::work tx(*conn);
                 system("clear");
 
-                app.printContacts(pool);
+                auto contacts = app.getContacts(tx);
+
+                for (auto contact : *contacts)
+                {
+
+                }
 
                 pool.release(conn);
                 break;
@@ -61,7 +66,7 @@ int main()
                 auto conn = pool.acquire();
                 pqxx::work tx(*conn);
                 system("clear");
-                app.printCalls(pool, contact);
+                app.getCallHistory(tx);
                 pool.release(conn);
                 break;
             }
@@ -72,19 +77,17 @@ int main()
                 pqxx::work tx(*conn);
                 system("clear");
 
-                app.printContacts(pool);
+                app.getContacts(tx);
 
                 cout << "what is the calling number ID?\n";
-                int callerID = 0;
-                cin >> callerID;
-                cin.ignore(1000,'\n');
+                string callerID;
+                getline(cin, callerID);
 
                 cout << "what is the ID of number being called\n";
-                int calleeID;
-                cin >> calleeID;
-                cin.ignore(1000,'\n');
+                string calleeID;
+                getline(cin, calleeID);
 
-                app.addCall(pool, callerID, calleeID, contact);
+                app.addCallHistory(tx, callerID, calleeID);
                 pool.release(conn);
                 break;
             }
@@ -108,7 +111,7 @@ int main()
                     getline(cin, number);
                     if (number.compare("break") == 0){break;}
                 }
-                app.addContact(pool, name, number);
+                app.addContact(tx, name, number);
                 pool.release(conn);
                 break;
             }
@@ -127,7 +130,7 @@ int main()
                 string nameToChange;
                 getline(cin, nameToChange);
 
-                app.editContactByNumber(pool, 0, nameToChange, contactToChange);
+                app.editContact(tx, nameToChange, contactToChange);
                 pool.release(conn);
                 break;
 
@@ -138,7 +141,7 @@ int main()
                 auto conn = pool.acquire();
                 pqxx::work tx(*conn);
                 system("clear");
-                app.printCalls(pool, contact);
+                app.getCallHistory(tx);
 
                 cout << "enter the ID of the call you would like to delete" << endl;
 
@@ -146,7 +149,7 @@ int main()
                 cin >> callID;
                 cin.ignore(1000,'\n');
 
-                app.deleteCall(pool, callID);
+                app.deleteCallHistory(tx, callID);
                 pool.release(conn);
                 break;
             }
@@ -156,14 +159,14 @@ int main()
                 auto conn = pool.acquire();
                 pqxx::work tx(*conn);
                 system("clear");
-                app.printContacts(pool);
+                app.getContacts(tx);
 
                 cout << "Enter the number of the contact you would like to delete";
                 string contactToDelete;
                 cin >> contactToDelete;
                 cin.ignore(1000,'\n');
 
-                app.deleteContactByNumber(pool, contactToDelete);
+                app.deleteContact(tx, contactToDelete);
                 pool.release(conn);
                 break;
             }
