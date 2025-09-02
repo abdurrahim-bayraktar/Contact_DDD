@@ -1,1 +1,4 @@
+#ifndef CALLHISTORY_FACTORY_HPP
+#define CALLHISTORY_FACTORY_HPP
 #include "callHistory.hpp"
+#endif // CALLHISTORY_FACTORY_HPP
