@@ -5,10 +5,13 @@
 #include "Domain/contact/contact-service.hpp"
 using namespace std;
 
-class Application
+class application : public
 {
-    public:
-    Application();
+    shared_ptr<contactService> contactService_;
+    shared_ptr<callHistoryService> callHistoryService_;
+
+public:
+    application();
     contact* printContacts(pqxx::work);
     callHistory* printCallHistory(pqxx::work);
     void addContact(pqxx::work, string name, string number);
@@ -19,4 +22,11 @@ class Application
 
 
 };
+
+inline contact* application::printContacts(pqxx::work tx)
+{
+
+    return contactService_->getAllContact(tx);
+}
+
 #endif // APPLICATION_HPP

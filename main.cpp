@@ -20,7 +20,7 @@ int main()
       hostaddr = 127.0.0.1 port = 5432"};
 
     connectionPool pool(poolString, 5);
-    Application app;
+    application app;
 
 
     //menu:
