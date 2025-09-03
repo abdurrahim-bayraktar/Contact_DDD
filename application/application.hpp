@@ -12,56 +12,35 @@ class application
     shared_ptr<callHistoryService> callHistoryService_;
 
 public:
-    application();
-    shared_ptr<vector<contact>> getContacts(pqxx::work&);
-    vector<callHistory> getCallHistory(pqxx::work&);
-
-    void addContact(pqxx::work&, string& name, string& number, string& address)
+    application()
     {
-        //contactService_.addContact();
+        auto factory = make_shared<contactFactory>();
+        auto repository = make_shared<contactRepository>();
+        contactService_ = make_shared<contactService>(factory, repository);
     };
 
-    void addCallHistory(pqxx::work&, string& callerNumber, string& CalleeNumber);
-    void deleteContact(pqxx::work&, string& number);
-    void deleteCallHistory(pqxx::work&, int& callId);
-    void editContact(pqxx::work&, string& newName, string& number);
+    shared_ptr<vector<contact>> getContacts(pqxx::work& tx)
+    {
+        return contactService_->getAllContact(tx);
+    };
+
+    vector<callHistory> getCallHistory(pqxx::work& tx)
+    {
+        return callHistoryService_->getAllCallHistories(tx);
+    };
+
+    void addContact(pqxx::work& tx, string& name, string& number, string& address)
+    {
+        cout << contactService_->addContact(tx, name, number, address) << endl;
+    };
+
+    void addCallHistory(pqxx::work&, string& callerNumber, string& CalleeNumber){};
+    void deleteContact(pqxx::work&, string& number){};
+    void deleteCallHistory(pqxx::work&, int& callId){};
+    void editContact(pqxx::work&, string& newName, string& number){};
 
 
 };
 
-inline application::application()
-{
-    auto factory = make_shared<contactFactory>();
-    auto repository = make_shared<contactRepository>();
-    contactService_ = make_shared<contactService>(factory, repository);
-}
-
-inline shared_ptr<vector<contact>> application::getContacts(pqxx::work& tx)
-{
-    return contactService_->getAllContact(tx);
-}
-
-inline vector<callHistory> application::getCallHistory(pqxx::work& tx)
-{
-    return callHistoryService_->getAllCallHistories(tx);
-}
-
-
-
-inline void application::addCallHistory(pqxx::work&, string& callerNumber, string& CalleeNumber)
-{
-}
-
-inline void application::deleteContact(pqxx::work&, string& number)
-{
-}
-
-inline void application::deleteCallHistory(pqxx::work&, int& callId)
-{
-}
-
-inline void application::editContact(pqxx::work&, string& newName, string& number)
-{
-}
 
 #endif // APPLICATION_HPP

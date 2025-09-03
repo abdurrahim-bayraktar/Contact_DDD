@@ -16,7 +16,13 @@ class contactService
     public:
     contactService(shared_ptr<contactFactory> factory, shared_ptr<contactRepository> repository) :
     factory_(move(factory)), repository_(move(repository)){};
+
+
     shared_ptr<vector<contact>> getAllContact(pqxx::work& tx);
+    string addContact(pqxx::work& tx, string& name, string& number, string& address)
+    {
+        return repository_->addContact(tx, name, number, address);
+    };
 
 };
 
