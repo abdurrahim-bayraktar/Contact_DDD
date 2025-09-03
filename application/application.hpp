@@ -26,7 +26,17 @@ public:
 
     vector<callHistory> getCallHistory(pqxx::work& tx)
     {
-        return callHistoryService_->getAllCallHistories(tx);
+        //TODO
+        vector<callHistory>histories = callHistoryService_->getAllCallHistories(tx);
+        for (int i = 0; callHistory& call : histories)
+        {
+
+            histories[i].callerName = contactService::getNameById(tx, call.callerId);
+
+            histories[i].calleeName = contactService::getNameById(tx, call.calleeId);
+            ++i;
+        }
+        return histories;
     };
 
     void addContact(pqxx::work& tx, string& name, string& number, string& address)

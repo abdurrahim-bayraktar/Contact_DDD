@@ -18,7 +18,13 @@ class contactRepository
         tx.exec("INSERT INTO contacts (name, number, addrress) VALUES($1, $2, $3)", params );
         tx.commit();
         return "200 OK";
+    }
 
+    static string getNameById(pqxx::work& tx, const int id)
+    {
+        pqxx::params param = id;
+        pqxx::result name = tx.exec("SELECT Name FROM contacts where ContactID = $1", param);
+        return get<0>(name[0].as<string>());
     }
 };
 

@@ -15,21 +15,27 @@ class contactService
     shared_ptr<contactRepository> repository_;
     public:
     contactService(shared_ptr<contactFactory> factory, shared_ptr<contactRepository> repository) :
-    factory_(move(factory)), repository_(move(repository)){};
+    factory_(std::move(factory)), repository_(std::move(repository)){};
 
 
     shared_ptr<vector<contact>> getAllContact(pqxx::work& tx);
-    string addContact(pqxx::work& tx, string& name, string& number, string& address)
+
+    static string addContact(pqxx::work& tx, string& name, string& number, string& address)
     {
-        return repository_->addContact(tx, name, number, address);
+        return contactRepository::addContact(tx, name, number, address);
     };
+
+    static string getNameById(pqxx::work& tx, const int id)
+    {
+        return contactRepository::getNameById(tx, id);
+    }
 
 };
 
 inline shared_ptr<vector<contact>> contactService::getAllContact(pqxx::work& tx)
 {
 
-    return repository_->getAllRows(tx);
+    return contactRepository::getAllRows(tx);
 }
 
 #endif // CONTACT_SERVICE_HPP
