@@ -12,14 +12,15 @@ class callHistoryService
 
 public:
     callHistoryService(callHistoryFactory factory, callHistoryRepository repository) : repository_(repository), factory_(factory){}
+
     vector<callHistory> getAllCallHistories(pqxx::work& tx)
     {
-        vector<callHistory> histories = repository_.getCallHistoryVector(tx);
-        repository_.populateCallHistoryNames(tx, histories);
-        return histories;
+        return repository_.getCallHistoryVector(tx);
     }
 
-
-    void addCallHistory(pqxx::work& tx, int callId);
+    static string addCallHistory(pqxx::work& tx, int callerId, int calleeId)
+    {
+        return callHistoryRepository::addCallHistory(tx, callerId, calleeId);
+    };
 };
 #endif // CALLHISTORY_SERVICE_HPP

@@ -26,7 +26,6 @@ public:
 
     vector<callHistory> getCallHistory(pqxx::work& tx)
     {
-        //TODO
         vector<callHistory>histories = callHistoryService_->getAllCallHistories(tx);
         for (int i = 0; callHistory& call : histories)
         {
@@ -39,12 +38,19 @@ public:
         return histories;
     };
 
-    void addContact(pqxx::work& tx, string& name, string& number, string& address)
+    static void addContact(pqxx::work& tx, string& name, string& number, string& address)
     {
-        cout << contactService_->addContact(tx, name, number, address) << endl;
+        cout << contactService::addContact(tx, name, number, address) << endl;
     };
 
-    void addCallHistory(pqxx::work&, string& callerNumber, string& CalleeNumber){};
+    static void addCallHistory(pqxx::work& tx, string& callerNumber, string& CalleeNumber)
+    {
+        int callerId = contactService::getIdByNumber(tx, callerNumber);
+        int calleeId = contactService::getIdByNumber(tx, CalleeNumber);
+
+        string status = callHistoryService::addCallHistory(tx,callerId, calleeId);
+        cout << status << endl;
+    };
     void deleteContact(pqxx::work&, string& number){};
     void deleteCallHistory(pqxx::work&, int& callId){};
     void editContact(pqxx::work&, string& newName, string& number){};

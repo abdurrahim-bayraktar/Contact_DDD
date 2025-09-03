@@ -23,6 +23,40 @@ void tempUtility2(pqxx::work& tx)
     tx.commit();
 }
 
+void printContacts(const shared_ptr<vector<contact>>& contacts)
+{
+    cout << left << setw(3)<< "ID";
+    cout<< "   ";
+    cout << right <<setw(10) <<"Name" << " " << setw(17) <<"Number"<< " ";
+    cout << setw(20) <<"address" << endl;
+
+    for (auto& contact : *contacts)
+    {
+        cout <<left << setw(4)<< contact.id;
+        cout << "   ";
+        cout << right << setw(10) << contact.name;
+        cout << " " << setw(20) << contact.number;
+        cout << " " << setw(15) << contact.address << endl;
+    }
+};
+
+void printCallHistory(const vector<callHistory>& callHistories)
+{
+    cout << left << setw(3)<< "CALL ID";
+    cout<< "   ";
+    cout << right <<setw(10) <<"caller name" << " " << setw(17) <<"callee name"<< " ";
+    cout << setw(20) <<"date" << endl;
+
+    for (const auto& callHistory : callHistories)
+    {
+        cout <<left << setw(4)<< callHistory.callId;
+        cout << "   ";
+        cout << right << setw(10) << callHistory.callerName;
+        cout << " " << setw(20) << callHistory.calleeName;
+        cout << " " << setw(15) << callHistory.date << endl;
+    }
+};
+
 
 int main()
 {
@@ -65,23 +99,10 @@ int main()
             {
                 auto conn = pool.acquire();
                 pqxx::work tx(*conn);
-                
 
                 auto contacts = app.getContacts(tx);
 
-                cout << left << setw(3)<< "ID";
-                cout<< "   ";
-                cout << right <<setw(10) <<"Name" << " " << setw(17) <<"Number"<< " ";
-                cout << setw(20) <<"address" << endl;
-
-                for (auto& contact : *contacts)
-                {
-                    cout <<left << setw(4)<< contact.id;
-                    cout << "   ";
-                    cout << right << setw(10) << contact.name;
-                    cout << " " << setw(20) << contact.number;
-                    cout << " " << setw(15) << contact.address << endl;
-                }
+                printContacts(contacts);
 
                 pool.release(conn);
                 break;
@@ -94,21 +115,7 @@ int main()
                 pqxx::work tx(*conn);
                 
                 auto callHistories = app.getCallHistory(tx);
-
-                cout << left << setw(3)<< "CALL ID";
-                cout<< "   ";
-                cout << right <<setw(10) <<"caller name" << " " << setw(17) <<"callee name"<< " ";
-                cout << setw(20) <<"date" << endl;
-
-                for (const auto& callHistory : callHistories)
-                {
-                    cout <<left << setw(4)<< callHistory.callId;
-                    cout << "   ";
-                    cout << right << setw(10) << callHistory.callerName;
-                    cout << " " << setw(20) << callHistory.calleeName;
-                    cout << " " << setw(15) << callHistory.date << endl;
-                }
-
+                printCallHistory(callHistories);
                 pool.release(conn);
                 break;
             }
@@ -117,19 +124,20 @@ int main()
             {
                 auto conn = pool.acquire();
                 pqxx::work tx(*conn);
-                
 
-                app.getContacts(tx);
+                auto contacts = app.getContacts(tx);
+                printContacts(contacts);
 
-                cout << "what is the calling number ID?\n";
+
+                cout << "what is the calling number?\n";
                 string callerID;
                 getline(cin, callerID);
 
-                cout << "what is the ID of number being called\n";
+                cout << "what is the number being called\n";
                 string calleeID;
                 getline(cin, calleeID);
 
-                app.addCallHistory(tx, callerID, calleeID);
+                application::addCallHistory(tx, callerID, calleeID);
                 pool.release(conn);
                 break;
             }
@@ -140,13 +148,14 @@ int main()
                 pqxx::work tx(*conn);
                 
 
-                cout << "creating new app...\n";
+                cout << "creating new contact...\n";
                 cout << "write the name of the contact\n";
                 string name;
                 getline(cin, name);
                 cout << "write the number of the contact\n Valid form is: +XX-XXX-XXX-XX-XX\n";
                 string number;
                 getline(cin, number);
+
                 while (!phoneNumberIsValid(number))
                 {
                     cout << "wrong format please try again! write break to exit\n";

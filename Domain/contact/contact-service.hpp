@@ -30,6 +30,11 @@ class contactService
         return contactRepository::getNameById(tx, id);
     }
 
+    static int getIdByNumber(pqxx::work& tx, const string& number)
+    {
+        return contactRepository::getIdByNumber(tx, number);
+    }
+
 };
 
 inline shared_ptr<vector<contact>> contactService::getAllContact(pqxx::work& tx)

@@ -15,7 +15,7 @@ class contactRepository
     static string addContact(pqxx::work& tx, string& name, string& number, string& address)
     {
         pqxx::params params {name,number, address};
-        tx.exec("INSERT INTO contacts (name, number, addrress) VALUES($1, $2, $3)", params );
+        tx.exec("INSERT INTO contacts (Name, Number, addrress) VALUES($1, $2, $3)", params );
         tx.commit();
         return "200 OK";
     }
@@ -25,6 +25,16 @@ class contactRepository
         pqxx::params param = id;
         pqxx::result name = tx.exec("SELECT Name FROM contacts where ContactID = $1", param);
         return get<0>(name[0].as<string>());
+    }
+
+    static int getIdByNumber(pqxx::work& tx, const string& name)
+    {
+        pqxx::params param = name;
+        pqxx::result Id = tx.exec("SELECT ContactID FROM contacts WHERE Name = $1", param);
+        tx.commit();
+
+        return get<0>(Id[0].as<int>());
+
     }
 };
 
