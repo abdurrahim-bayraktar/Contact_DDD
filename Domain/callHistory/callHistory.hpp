@@ -7,6 +7,8 @@ class callHistory
     int callId;
     int callerId;
     int calleeId;
+    string callerName;
+    string calleeName;
     string date;
 
     callHistory();

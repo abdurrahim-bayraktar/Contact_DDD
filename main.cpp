@@ -5,7 +5,7 @@
 #include "./infrastructure/connectionPooling.hpp"
 #include <regex>
 
-bool phoneNumberIsValid(string& phoneNumber)
+bool phoneNumberIsValid(const string& phoneNumber)
 {
     regex patern("^\\+[0-9]{2}-[0-9]{3}-[0-9]{3}-[0-9]{2}-[0-9]{2}$");
     return regex_match(phoneNumber, patern);
@@ -74,7 +74,7 @@ int main()
                 cout << right <<setw(10) <<"Name" << " " << setw(17) <<"Number"<< " ";
                 cout << setw(20) <<"address" << endl;
 
-                for (auto contact : *contacts)
+                for (auto& contact : *contacts)
                 {
                     cout <<left << setw(4)<< contact.id;
                     cout << "   ";
@@ -97,15 +97,15 @@ int main()
 
                 cout << left << setw(3)<< "CALL ID";
                 cout<< "   ";
-                cout << right <<setw(10) <<"callerId" << " " << setw(17) <<"calleeId"<< " ";
+                cout << right <<setw(10) <<"caller name" << " " << setw(17) <<"callee name"<< " ";
                 cout << setw(20) <<"date" << endl;
 
-                for (auto callHistory : callHistories)
+                for (const auto& callHistory : callHistories)
                 {
                     cout <<left << setw(4)<< callHistory.callId;
                     cout << "   ";
-                    cout << right << setw(10) << callHistory.callerId;
-                    cout << " " << setw(20) << callHistory.calleeId;
+                    cout << right << setw(10) << callHistory.callerName;
+                    cout << " " << setw(20) << callHistory.calleeName;
                     cout << " " << setw(15) << callHistory.date << endl;
                 }
 
@@ -142,18 +142,21 @@ int main()
 
                 cout << "creating new app...\n";
                 cout << "write the name of the contact\n";
-                string name = "";
+                string name;
                 getline(cin, name);
                 cout << "write the number of the contact\n Valid form is: +XX-XXX-XXX-XX-XX\n";
-                string number = "";
+                string number;
                 getline(cin, number);
                 while (!phoneNumberIsValid(number))
                 {
                     cout << "wrong format please try again! write break to exit\n";
                     getline(cin, number);
-                    if (number.compare("break") == 0){break;}
+                    if (number == "break"){break;}
                 }
-                app.addContact(tx, name, number);
+                string address;
+                cout << "write the address of the contact (char < 50)";
+                getline(cin, address);
+                app.addContact(tx, name, number, address);
                 pool.release(conn);
                 break;
             }
@@ -212,6 +215,7 @@ int main()
                 pool.release(conn);
                 break;
             }
+        default: ;
         }
 
 

@@ -15,7 +15,12 @@ public:
     application();
     shared_ptr<vector<contact>> getContacts(pqxx::work&);
     vector<callHistory> getCallHistory(pqxx::work&);
-    void addContact(pqxx::work&, string& name, string& number);
+
+    void addContact(pqxx::work&, string& name, string& number, string& address)
+    {
+        //contactService_.addContact();
+    };
+
     void addCallHistory(pqxx::work&, string& callerNumber, string& CalleeNumber);
     void deleteContact(pqxx::work&, string& number);
     void deleteCallHistory(pqxx::work&, int& callId);
@@ -41,9 +46,7 @@ inline vector<callHistory> application::getCallHistory(pqxx::work& tx)
     return callHistoryService_->getAllCallHistories(tx);
 }
 
-inline void application::addContact(pqxx::work&, string& name, string& number)
-{
-}
+
 
 inline void application::addCallHistory(pqxx::work&, string& callerNumber, string& CalleeNumber)
 {
