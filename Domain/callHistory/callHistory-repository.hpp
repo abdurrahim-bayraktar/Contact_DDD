@@ -28,12 +28,10 @@ class callHistoryRepository
 
     static string addCallHistory(pqxx::work& tx, int callerId, int calleeId)
     {
-
-        pqxx::params params{callerId, callerId};
-        tx.exec("INSERT INTO calls (callerID, calleeID) VALUES ($1, $2)", params);
+        pqxx::params params{callerId, calleeId};
+        tx.exec("INSERT INTO calls (caller, callee) VALUES ($1, $2)", params);
         tx.commit();
         return "200 OK";
-
     }
 
 };

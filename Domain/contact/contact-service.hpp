@@ -18,7 +18,7 @@ class contactService
     factory_(std::move(factory)), repository_(std::move(repository)){};
 
 
-    shared_ptr<vector<contact>> getAllContact(pqxx::work& tx);
+    static shared_ptr<vector<contact>> getAllContact(pqxx::work& tx);
 
     static string addContact(pqxx::work& tx, string& name, string& number, string& address)
     {
@@ -33,6 +33,16 @@ class contactService
     static int getIdByNumber(pqxx::work& tx, const string& number)
     {
         return contactRepository::getIdByNumber(tx, number);
+    }
+
+    static string editContact(pqxx::work& tx, const string& name, const int id)
+    {
+        return contactRepository::editContact(tx, name, id);
+    }
+
+    static string deleteCOntact(pqxx::work& tx, const string& number)
+    {
+        return contactRepository::deleteContact(tx, number);
     }
 
 };

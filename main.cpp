@@ -174,17 +174,21 @@ int main()
             {
                 auto conn = pool.acquire();
                 pqxx::work tx(*conn);
-                
 
-                cout << "what is the number of the contact you would like to change?\n";
-                string contactToChange;
-                getline(cin, contactToChange);
+                auto contacts = app.getContacts(tx);
+                printContacts(contacts);
+
+                cout << "what is the id of the contact you would like to change?\n";
+                int contactId;
+                cin >> contactId;
+                cin.ignore(1000,'\n');
 
                 cout <<"what would you like to change the name to?\n";
                 string nameToChange;
                 getline(cin, nameToChange);
 
-                app.editContact(tx, nameToChange, contactToChange);
+                app.editContact(tx, nameToChange, contactId);
+
                 pool.release(conn);
                 break;
 
@@ -212,8 +216,9 @@ int main()
             {
                 auto conn = pool.acquire();
                 pqxx::work tx(*conn);
-                
-                app.getContacts(tx);
+
+                auto contacts = app.getContacts(tx);
+                printContacts(contacts);
 
                 cout << "Enter the number of the contact you would like to delete";
                 string contactToDelete;

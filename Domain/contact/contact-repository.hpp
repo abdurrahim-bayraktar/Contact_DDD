@@ -10,7 +10,20 @@ class contactRepository
     contactRepository()= default;
 
 
-    static shared_ptr<vector<contact>> getAllRows(pqxx::work& tx);
+    static shared_ptr<vector<contact>> getAllRows(pqxx::work& tx)
+    {
+
+        shared_ptr<pqxx::result> rows = make_shared<pqxx::result>(tx.exec("SELECT * FROM contacts"));
+        shared_ptr<vector<contact>> objects = make_shared<vector<contact>>();
+
+        for (auto row : *rows)
+        {
+            auto[id, name, number, address] = row.as<int,string, string, string>();
+            objects->push_back(contactFactory::createContactFromRow(id, name, number, address));
+        }
+
+        return objects;
+    };
 
     static string addContact(pqxx::work& tx, string& name, string& number, string& address)
     {
@@ -23,34 +36,38 @@ class contactRepository
     static string getNameById(pqxx::work& tx, const int id)
     {
         pqxx::params param = id;
-        pqxx::result name = tx.exec("SELECT Name FROM contacts where ContactID = $1", param);
+        pqxx::result name = tx.exec("SELECT Name FROM contacts where ContactID = $1 LIMIT 1", param);
         return get<0>(name[0].as<string>());
     }
 
     static int getIdByNumber(pqxx::work& tx, const string& name)
     {
         pqxx::params param = name;
-        pqxx::result Id = tx.exec("SELECT ContactID FROM contacts WHERE Name = $1", param);
+        pqxx::result Id = tx.exec("SELECT ContactID FROM contacts WHERE Number = $1", param);
         tx.commit();
 
         return get<0>(Id[0].as<int>());
 
     }
-};
 
-inline shared_ptr<vector<contact>> contactRepository::getAllRows(pqxx::work& tx)
-{
-    shared_ptr<pqxx::result> rows = make_shared<pqxx::result>(tx.exec("SELECT * FROM contacts"));
-
-    shared_ptr<vector<contact>> objects = make_shared<vector<contact>>();
-
-    for (auto row : *rows)
+    static string editContact(pqxx::work& tx, const string& name, const int id)
     {
-        auto[id, name, number, address] = row.as<int,string, string, string>();
-        objects->push_back(contactFactory::makeContactFromRow(id, name, number, address));
+        pqxx::params params{name,id};
+        tx.exec("UPDATE contacts SET Name = $1 WHERE ContactID = $2", params);
+        tx.commit();
+
+        return "200 OK";
     }
 
-    return objects;
-}
+    static string deleteContact(pqxx::work& tx, const string& number)
+    {
+        pqxx::params param{number};
+        tx.exec("DELETE FROM contacts WHERE Number = $1", param);
+        tx.commit();
+        return "200 OK";
+    }
+
+};
+
 
 #endif // CONTACT_REPOSITORY_HPP

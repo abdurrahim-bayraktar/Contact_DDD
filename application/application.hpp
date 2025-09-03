@@ -19,9 +19,9 @@ public:
         contactService_ = make_shared<contactService>(factory, repository);
     };
 
-    shared_ptr<vector<contact>> getContacts(pqxx::work& tx)
+    static shared_ptr<vector<contact>> getContacts(pqxx::work& tx)
     {
-        return contactService_->getAllContact(tx);
+        return contactService::getAllContact(tx);
     };
 
     vector<callHistory> getCallHistory(pqxx::work& tx)
@@ -51,9 +51,18 @@ public:
         string status = callHistoryService::addCallHistory(tx,callerId, calleeId);
         cout << status << endl;
     };
-    void deleteContact(pqxx::work&, string& number){};
+
+    static void deleteContact(pqxx::work& tx, string& number)
+    {
+        cout << contactRepository::deleteContact(tx, number) << endl;
+    };
+
     void deleteCallHistory(pqxx::work&, int& callId){};
-    void editContact(pqxx::work&, string& newName, string& number){};
+
+    static void editContact(pqxx::work& tx, string& newName, int& contactId)
+    {
+        cout << contactRepository::editContact(tx, newName, contactId)<< endl;
+    };
 
 
 };
