@@ -5,13 +5,15 @@
 class contactFactory
 {
     public:
-    contactFactory();
-    contact makeContactFromRow(pqxx::row);
+    contactFactory()
+    {
+    };
+    static contact makeContactFromRow(int id, const string& name, const string& number, const string& address);
 };
 
-inline contact contactFactory::makeContactFromRow(pqxx::row row)
+inline contact contactFactory::makeContactFromRow(const int id, const string& name, const string& number, const string& address)
 {
-    contact contact(row[1].as<string>(), row[2].as<string>(), row[3].as<string>());
+    contact contact(id, name, number, address);
     return contact;
 }
 #endif // CONTACT_FACTORY_HPP

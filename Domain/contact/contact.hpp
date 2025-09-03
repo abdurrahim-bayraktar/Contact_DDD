@@ -13,12 +13,12 @@ public:
     string address;
 
     contact();
-    contact(const string& name, const string& number, const string& address);
+    contact(const int id, const string& name, const string& number, const string& address);
 
 };
 
-inline contact::contact(const string& name, const string& number, const string& address):
-                            name(name), number(number), address(address)
+inline contact::contact(const int id, const string& name, const string& number, const string& address):
+                            id(id), name(name), number(number), address(address)
 {}
 
 

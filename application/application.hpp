@@ -3,6 +3,7 @@
 
 #include "../Domain/callHistory/callHistory-service.hpp"
 #include "../Domain/contact/contact-service.hpp"
+#include "../Domain/contact/contact-factory.hpp"
 using namespace std;
 
 class application
@@ -13,7 +14,7 @@ class application
 public:
     application();
     shared_ptr<vector<contact>> getContacts(pqxx::work&);
-    callHistory* getCallHistory(pqxx::work&);
+    vector<callHistory> getCallHistory(pqxx::work&);
     void addContact(pqxx::work&, string& name, string& number);
     void addCallHistory(pqxx::work&, string& callerNumber, string& CalleeNumber);
     void deleteContact(pqxx::work&, string& number);
@@ -32,12 +33,12 @@ inline application::application()
 
 inline shared_ptr<vector<contact>> application::getContacts(pqxx::work& tx)
 {
-
     return contactService_->getAllContact(tx);
 }
 
-inline callHistory* application::getCallHistory(pqxx::work&)
+inline vector<callHistory> application::getCallHistory(pqxx::work& tx)
 {
+    return callHistoryService_->getAllCallHistories(tx);
 }
 
 inline void application::addContact(pqxx::work&, string& name, string& number)

@@ -5,10 +5,22 @@
 #include "./infrastructure/connectionPooling.hpp"
 #include <regex>
 
-bool phoneNumberIsValid(string phoneNumber)
+bool phoneNumberIsValid(string& phoneNumber)
 {
     regex patern("^\\+[0-9]{2}-[0-9]{3}-[0-9]{3}-[0-9]{2}-[0-9]{2}$");
     return regex_match(phoneNumber, patern);
+}
+
+void tempUtility(pqxx::work& tx)
+{
+    tx.exec("ALTER TABLE contacts ADD COLUMN addrress varchar(50)");
+    tx.commit();
+};
+
+void tempUtility2(pqxx::work& tx)
+{
+    tx.exec("UPDATE contacts SET addrress = 'a'");
+    tx.commit();
 }
 
 
@@ -21,6 +33,12 @@ int main()
 
     connectionPool pool(poolString, 5);
     application app;
+
+    // auto conn = pool.acquire();
+    // pqxx::work tx(*conn);
+    // tempUtility2(tx);
+    // pool.release(conn);
+
 
 
     //menu:
@@ -61,8 +79,8 @@ int main()
                     cout <<left << setw(4)<< contact.id;
                     cout << "   ";
                     cout << right << setw(10) << contact.name;
-                    cout << " " << setw(27) << contact.number;
-                    cout << " " << setw(25) << contact.address << endl;
+                    cout << " " << setw(20) << contact.number;
+                    cout << " " << setw(15) << contact.address << endl;
                 }
 
                 pool.release(conn);
@@ -75,7 +93,22 @@ int main()
                 auto conn = pool.acquire();
                 pqxx::work tx(*conn);
                 
-                app.getCallHistory(tx);
+                auto callHistories = app.getCallHistory(tx);
+
+                cout << left << setw(3)<< "CALL ID";
+                cout<< "   ";
+                cout << right <<setw(10) <<"callerId" << " " << setw(17) <<"calleeId"<< " ";
+                cout << setw(20) <<"date" << endl;
+
+                for (auto callHistory : callHistories)
+                {
+                    cout <<left << setw(4)<< callHistory.callId;
+                    cout << "   ";
+                    cout << right << setw(10) << callHistory.callerId;
+                    cout << " " << setw(20) << callHistory.calleeId;
+                    cout << " " << setw(15) << callHistory.date << endl;
+                }
+
                 pool.release(conn);
                 break;
             }
