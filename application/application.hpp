@@ -37,6 +37,9 @@ namespace application
     {
         //TODO: implement with single query
         vector<string> numbers;
+        numbers.push_back(callerNumber);
+        numbers.push_back(CalleeNumber);
+
         vector<int> ids = contactService::getIdsByNumbers(tx, numbers);
         int callerId = ids[0];
         int calleeId = ids[1];

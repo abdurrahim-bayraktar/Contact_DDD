@@ -80,12 +80,12 @@ namespace contactRepository
     inline vector<int> getIdsFromNumbers(pqxx::work& tx, const vector<string>& numbers)
     {
         const pqxx::params params = contactFactory::createGetIdsByNumbersParams(numbers);
-        string queryString = "SELECT DISTINCT ON (Number) ContactID FROM contacts WHERE Number = ANY ('{";
-
+        string queryString = "SELECT DISTINCT ON (Number) ContactID FROM contacts WHERE Number = ANY (ARRAY[";
+        //TODO: IMPLEMENT IN FACTORY
         for (unsigned int i = 0; i < params.size(); i++)
         {
             queryString += "$";
-            queryString += std::to_string(i);
+            queryString += std::to_string(i+1);
 
             if (i != params.size() - 1)
             {
@@ -93,7 +93,7 @@ namespace contactRepository
             }
 
         }
-        queryString += "}') ORDER BY Number, ContactID";
+        queryString += "]) ORDER BY Number, ContactID";
 
         pqxx::result rows = tx.exec(queryString, params);
 
