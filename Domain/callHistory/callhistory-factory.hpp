@@ -22,6 +22,26 @@ namespace callHistoryFactory
         }
         return callHistories;
     }
+
+    inline pqxx::params createAddCallHistoryParams(const int& callerId, const int& calleeId)
+    {
+        pqxx::params params{callerId, calleeId};
+        return params;
+    }
+
+    inline pqxx::params createDeleteCallHistoryParams(const int& callID)
+    {
+        pqxx::params params{callID};
+        return params;
+    }
+
+
+    inline pqxx::params createDeleteCallHistoriesWithContactId(const int& contactId)
+    {
+        pqxx::params params{contactId};
+        return params;
+    }
+
 };
 
 #endif // CALLHISTORY_FACTORY_HPP

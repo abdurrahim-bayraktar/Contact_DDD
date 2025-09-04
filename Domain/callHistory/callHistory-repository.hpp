@@ -4,43 +4,41 @@
 #include "callhistory-factory.hpp"
 #include <vector>
 
+#include "../contact/contact-factory.hpp"
+
 using namespace std;
 
 namespace callHistoryRepository
 {
 
-    vector<callHistory> getCallHistoryVector(pqxx::work& tx)
+    inline vector<callHistory> getCallHistoryVector(pqxx::work& tx)
     {
         pqxx::result rows = tx.exec("SELECT * FROM calls");
         vector<callHistory> callHistories = callHistoryFactory::createCallHistoryVector(rows);
-
-        for (auto row : rows)
-        {
-            callHistories.push_back(callHistoryFactory::createCallHistoryObject(row));
-        }
         return callHistories;
 
     }
 
-    static string addCallHistory(pqxx::work& tx, int callerId, int calleeId)
+    inline string addCallHistory(pqxx::work& tx, int callerId, int calleeId)
     {
-        pqxx::params params{callerId, calleeId};
+        pqxx::params params = callHistoryFactory::createAddCallHistoryParams(callerId, calleeId);
         tx.exec("INSERT INTO calls (caller, callee) VALUES ($1, $2)", params);
         tx.commit();
         return "200 OK";
     }
 
-    static string deleteCallHistory(pqxx::work& tx, int callID)
+    inline string deleteCallHistory(pqxx::work& tx, int callID)
     {
-        pqxx::params params{callID};
+        pqxx::params params = callHistoryFactory::createDeleteCallHistoryParams(callID);
         tx.exec("DELETE FROM calls WHERE CallID = $1", params);
         tx.commit();
         return "200 OK";
 
     }
-    static void deleteCallHistoriesWithContactId(pqxx::work& tx, int& contactId)
+
+    inline void deleteCallHistoriesWithContactId(pqxx::work& tx, const int& contactId)
     {
-        pqxx::params params{contactId};
+        pqxx::params params = callHistoryFactory::createDeleteCallHistoryParams(contactId);
         tx.exec("DELETE FROM calls WHERE (CallerID = $1 OR CalleeID = $1)", params);
         tx.commit();
     }
