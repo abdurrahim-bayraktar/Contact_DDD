@@ -75,6 +75,40 @@ namespace contactFactory
         return params;
     }
 
+    inline vector<int> createGetIdsByNumbersVector(const pqxx::result& rows)
+    {
+        vector<int> ids;
+
+        for (auto row : rows)
+        {
+            ids.push_back(row[0].as<int>());
+        }
+
+        return ids;
+    }
+
+    inline string createQueryStringGetIds(const int& parameterNumber)
+    {
+
+        string queryString = "SELECT DISTINCT ON (Number) ContactID FROM contacts WHERE Number = ANY (ARRAY[";
+
+        for (unsigned int i = 0; i < parameterNumber; i++)
+        {
+            queryString += "$";
+            queryString += std::to_string(i+1);
+
+            if (i != parameterNumber - 1)
+            {
+                queryString += ", ";
+            }
+
+        }
+        queryString += "]) ORDER BY Number, ContactID";
+
+        return queryString;
+
+    }
+
 };
 
 

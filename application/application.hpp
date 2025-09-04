@@ -19,7 +19,7 @@ namespace application
         vector<callHistory>histories = callHistoryService::getAllCallHistories(tx);
         for (int i = 0; callHistory& call : histories)
         {
-
+            //TODO:handled with double leftjoin on foreign keys
             histories[i].callerName = contactService::getNameById(tx, call.callerId);
 
             histories[i].calleeName = contactService::getNameById(tx, call.calleeId);
@@ -35,19 +35,24 @@ namespace application
 
     static void addCallHistory(pqxx::work& tx, const string& callerNumber, const string& CalleeNumber)
     {
-        //TODO: implement with single query
+
         vector<string> numbers;
         numbers.push_back(callerNumber);
         numbers.push_back(CalleeNumber);
 
         vector<int> ids = contactService::getIdsByNumbers(tx, numbers);
-        int callerId = ids[0];
-        int calleeId = ids[1];
-        if (callerId != -1)
+
+        if (ids.empty())
         {
-            string status = callHistoryService::addCallHistory(tx,callerId, calleeId);
-            cout << status << endl;
+            return;
         }
+
+        int callerId = ids[0]; //is it certain these two won't be switched?
+        int calleeId = ids[1];
+
+        string status = callHistoryService::addCallHistory(tx,callerId, calleeId);
+        cout << status << endl;
+
     };
 
     static void deleteContact(pqxx::work& tx, const string& number)

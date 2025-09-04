@@ -37,7 +37,15 @@ namespace contactService
 
     inline vector<int> getIdsByNumbers(pqxx::work& tx, const vector<string>& numbers)
     {
-        return contactRepository::getIdsFromNumbers(tx, numbers);
+        vector<int> idVector = contactRepository::getIdsFromNumbers(tx, numbers);
+
+        if (idVector.empty())
+        {
+            cout << "ERROR: NO ID BY THOSE NUMBERS";
+        }
+
+        return idVector;
+
     }
 
     inline string editContact(pqxx::work& tx, const string& name, const int id)
