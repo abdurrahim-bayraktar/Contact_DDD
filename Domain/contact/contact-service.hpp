@@ -35,9 +35,9 @@ namespace contactService
         return contactRepository::getIdByNumber(tx, number);
     }
 
-    inline pair<int, int> getIdsByNumbers(pqxx::work& tx, const string& callerNumber, const string& calleeNumber)
+    inline vector<int> getIdsByNumbers(pqxx::work& tx, const vector<string>& numbers)
     {
-        return contactRepository::getIdsFromNumbers(tx, callerNumber, calleeNumber);
+        return contactRepository::getIdsFromNumbers(tx, numbers);
     }
 
     inline string editContact(pqxx::work& tx, const string& name, const int id)
@@ -49,6 +49,8 @@ namespace contactService
     {
         return contactRepository::deleteContact(tx, number);
     }
+
+    //inline pair<string, string> getNamesByIds(pqxx::work& tx, const& int id)
 
 };
 

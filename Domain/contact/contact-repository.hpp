@@ -10,7 +10,6 @@ namespace contactRepository
 
     inline vector<contact> getAllRows(pqxx::work& tx)
     {
-
         pqxx::result rows = tx.exec("SELECT * FROM contacts");
         vector<contact> objects = contactFactory::createContactVector(rows);
 
@@ -22,6 +21,7 @@ namespace contactRepository
         pqxx::params params = contactFactory::createAddContactParam(name,number, address);
         tx.exec("INSERT INTO contacts (Name, Number, addrress) VALUES($1, $2, $3)", params );
         tx.commit();
+
         return "200 OK";
     }
 
@@ -29,6 +29,7 @@ namespace contactRepository
     {
         pqxx::params param = contactFactory::createGetNameByIdParam(id);
         pqxx::result name = tx.exec("SELECT Name FROM contacts where ContactID = $1 LIMIT 1", param);
+
         return get<0>(name[0].as<string>());
     }
 
@@ -37,11 +38,14 @@ namespace contactRepository
         const pqxx::params param = contactFactory::createGetIdByNumberParams(number);
         const pqxx::result Id = tx.exec("SELECT ContactID FROM contacts WHERE Number = $1", param);
         tx.commit();
+
         if (Id[0][0].is_null())
         {
             cout << "ERROR: No such contact with ID";
+
             return -1;
         }
+
         return get<0>(Id[0].as<int>());
 
     }
@@ -73,19 +77,40 @@ namespace contactRepository
         }
     }
 
-    inline pair<int, int> getIdsFromNumbers(pqxx::work& tx, const string& callerNumber, const string& calleeNumber)
+    inline vector<int> getIdsFromNumbers(pqxx::work& tx, const vector<string>& numbers)
     {
-        const pqxx::params params = contactFactory::createGetIdsByNumbersParams(callerNumber, calleeNumber);
-        pqxx::result rows = tx.exec("SELECT DISTINCT ON (Number) ContactID FROM contacts WHERE (Number = $1 OR Number = $2) ORDER BY Number, ContactID", params);
+        const pqxx::params params = contactFactory::createGetIdsByNumbersParams(numbers);
+        string queryString = "SELECT DISTINCT ON (Number) ContactID FROM contacts WHERE Number = ANY ('{";
+
+        for (unsigned int i = 0; i < params.size(); i++)
+        {
+            queryString += "$";
+            queryString += std::to_string(i);
+
+            if (i != params.size() - 1)
+            {
+                queryString += ", ";
+            }
+
+        }
+        queryString += "}') ORDER BY Number, ContactID";
+
+        pqxx::result rows = tx.exec(queryString, params);
+
+        vector<int> idVector;
         tx.commit();
-        if (rows[0][0].is_null()||rows[1][0].is_null())
+
+
+        //TODO: create factory function to create vector from rows
+        if (rows[0][0].is_null()||rows[1][0].is_null()) //todo: implement with COUNT
         {
             cout << "ERROR: No such contact with Number";
-            pair<int, int> p = {-1,-1};
-            return p;
+            vector<int> v;
+            v.push_back(-1);
+            return v;
         }
-        pair<int, int> pair = {rows[0][0].as<int>(), rows[1][0].as<int>()};
-        return pair;
+
+        return idVector;
     }
 
 

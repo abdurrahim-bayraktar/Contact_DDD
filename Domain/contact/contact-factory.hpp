@@ -56,9 +56,22 @@ namespace contactFactory
         return param;
     }
 
-    inline pqxx::params createGetIdsByNumbersParams(const string& callerNumber, const string& calleeNumber)
+    inline pqxx::params createGetIdsByNumbersParams(const vector<string>& numbers)
     {
-        pqxx::params params{callerNumber, calleeNumber};
+        pqxx::params params{numbers[0]};
+
+        for (int i=0; const string& number:numbers)
+        {
+            if (i == 0)
+            {
+                ++i;
+                continue;
+            }
+
+            params.append(number);
+            ++i;
+        }
+
         return params;
     }
 

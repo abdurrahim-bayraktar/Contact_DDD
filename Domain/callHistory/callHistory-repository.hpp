@@ -31,9 +31,9 @@ namespace callHistoryRepository
     {
         const pqxx::params params = callHistoryFactory::createDeleteCallHistoryParams(callID);
         pqxx::result result = tx.exec("DELETE FROM calls WHERE CallID = $1", params);
-        tx.commit();
         if (result.affected_rows() != 0)
         {
+             tx.commit();
             return "200 OK";
         }
         return "ERROR: No such ID";

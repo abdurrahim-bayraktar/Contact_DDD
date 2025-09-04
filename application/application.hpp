@@ -36,10 +36,10 @@ namespace application
     static void addCallHistory(pqxx::work& tx, const string& callerNumber, const string& CalleeNumber)
     {
         //TODO: implement with single query
-
-        pair<int, int > ids = contactService::getIdsByNumbers(tx, callerNumber, CalleeNumber);
-        int callerId = ids.first;
-        int calleeId = ids.second;
+        vector<string> numbers;
+        vector<int> ids = contactService::getIdsByNumbers(tx, numbers);
+        int callerId = ids[0];
+        int calleeId = ids[1];
         if (callerId != -1)
         {
             string status = callHistoryService::addCallHistory(tx,callerId, calleeId);
