@@ -2,6 +2,7 @@
 #define CONTACT_HPP
 
 #include <string>
+#include <utility>
 using namespace std;
 
 class contact
@@ -13,12 +14,12 @@ public:
     string address;
 
     contact();
-    contact(const int id, const string& name, const string& number, const string& address);
+    contact(int id, string  name, string  number, string  address);
 
 };
 
-inline contact::contact(const int id, const string& name, const string& number, const string& address):
-                            id(id), name(name), number(number), address(address)
+inline contact::contact(const int id, string  name, string  number, string  address):
+                            id(id), name(std::move(name)), number(std::move(number)), address(std::move(address))
 {}
 
 

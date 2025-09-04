@@ -23,14 +23,14 @@ void tempUtility2(pqxx::work& tx)
     tx.commit();
 }
 
-void printContacts(const shared_ptr<vector<contact>>& contacts)
+void printContacts(const vector<contact>& contacts)
 {
     cout << left << setw(3)<< "ID";
     cout<< "   ";
     cout << right <<setw(10) <<"Name" << " " << setw(17) <<"Number"<< " ";
     cout << setw(20) <<"address" << endl;
 
-    for (auto& contact : *contacts)
+    for (auto& contact : contacts)
     {
         cout <<left << setw(4)<< contact.id;
         cout << "   ";
@@ -66,7 +66,7 @@ int main()
       hostaddr = 127.0.0.1 port = 5432"};
 
     connectionPool pool(poolString, 5);
-    application app;
+
 
     // auto conn = pool.acquire();
     // pqxx::work tx(*conn);
@@ -100,7 +100,7 @@ int main()
                 auto conn = pool.acquire();
                 pqxx::work tx(*conn);
 
-                auto contacts = app.getContacts(tx);
+                auto contacts = application::getContacts(tx);
 
                 printContacts(contacts);
 
@@ -114,7 +114,7 @@ int main()
                 auto conn = pool.acquire();
                 pqxx::work tx(*conn);
                 
-                auto callHistories = app.getCallHistory(tx);
+                auto callHistories = application::getCallHistory(tx);
                 printCallHistory(callHistories);
                 pool.release(conn);
                 break;
@@ -125,7 +125,7 @@ int main()
                 auto conn = pool.acquire();
                 pqxx::work tx(*conn);
 
-                auto contacts = app.getContacts(tx);
+                auto contacts = application::getContacts(tx);
                 printContacts(contacts);
 
 
@@ -165,7 +165,7 @@ int main()
                 string address;
                 cout << "write the address of the contact (char < 50)";
                 getline(cin, address);
-                app.addContact(tx, name, number, address);
+                application::addContact(tx, name, number, address);
                 pool.release(conn);
                 break;
             }
@@ -175,7 +175,7 @@ int main()
                 auto conn = pool.acquire();
                 pqxx::work tx(*conn);
 
-                auto contacts = app.getContacts(tx);
+                auto contacts = application::getContacts(tx);
                 printContacts(contacts);
 
                 cout << "what is the id of the contact you would like to change?\n";
@@ -187,7 +187,7 @@ int main()
                 string nameToChange;
                 getline(cin, nameToChange);
 
-                app.editContact(tx, nameToChange, contactId);
+                application::editContact(tx, nameToChange, contactId);
 
                 pool.release(conn);
                 break;
@@ -199,7 +199,8 @@ int main()
                 auto conn = pool.acquire();
                 pqxx::work tx(*conn);
                 
-                app.getCallHistory(tx);
+                auto callHistories = application::getCallHistory(tx);
+                printCallHistory(callHistories);
 
                 cout << "enter the ID of the call you would like to delete" << endl;
 
@@ -207,7 +208,7 @@ int main()
                 cin >> callID;
                 cin.ignore(1000,'\n');
 
-                app.deleteCallHistory(tx, callID);
+                application::deleteCallHistory(tx, callID);
                 pool.release(conn);
                 break;
             }
@@ -217,15 +218,15 @@ int main()
                 auto conn = pool.acquire();
                 pqxx::work tx(*conn);
 
-                auto contacts = app.getContacts(tx);
+                auto contacts = application::getContacts(tx);
                 printContacts(contacts);
 
-                cout << "Enter the number of the contact you would like to delete";
+                cout << "Enter the Number of the contact you would like to delete\n WARNING: RELATED CALLS WILL BE DELETED\n";
                 string contactToDelete;
                 cin >> contactToDelete;
                 cin.ignore(1000,'\n');
 
-                app.deleteContact(tx, contactToDelete);
+                application::deleteContact(tx, contactToDelete);
                 pool.release(conn);
                 break;
             }

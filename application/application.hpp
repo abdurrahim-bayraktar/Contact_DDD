@@ -6,27 +6,18 @@
 #include "../Domain/contact/contact-factory.hpp"
 using namespace std;
 
-class application
+namespace application
 {
-    shared_ptr<contactService> contactService_;
-    shared_ptr<callHistoryService> callHistoryService_;
 
-public:
-    application()
-    {
-        auto factory = make_shared<contactFactory>();
-        auto repository = make_shared<contactRepository>();
-        contactService_ = make_shared<contactService>(factory, repository);
-    };
 
-    static shared_ptr<vector<contact>> getContacts(pqxx::work& tx)
+    static vector<contact> getContacts(pqxx::work& tx)
     {
         return contactService::getAllContact(tx);
     };
 
-    vector<callHistory> getCallHistory(pqxx::work& tx)
+    static vector<callHistory> getCallHistory(pqxx::work& tx)
     {
-        vector<callHistory>histories = callHistoryService_->getAllCallHistories(tx);
+        vector<callHistory>histories = callHistoryService::getAllCallHistories(tx);
         for (int i = 0; callHistory& call : histories)
         {
 
@@ -54,10 +45,15 @@ public:
 
     static void deleteContact(pqxx::work& tx, string& number)
     {
+        int contactId = contactService::getIdByNumber(tx, number);
+        callHistoryRepository::deleteCallHistoriesWithContactId(tx, contactId);
         cout << contactRepository::deleteContact(tx, number) << endl;
     };
 
-    void deleteCallHistory(pqxx::work&, int& callId){};
+    void deleteCallHistory(pqxx::work& tx, int& callId)
+    {
+        cout << callHistoryRepository::deleteCallHistory(tx, callId) << endl;
+    };
 
     static void editContact(pqxx::work& tx, string& newName, int& contactId)
     {

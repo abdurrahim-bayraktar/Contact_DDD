@@ -5,17 +5,13 @@
 #include "callHistory-repository.hpp"
 #include <vector>
 using namespace std;
-class callHistoryService
+
+namespace  callHistoryService
 {
-    callHistoryRepository repository_;
-    callHistoryFactory factory_;
 
-public:
-    callHistoryService(callHistoryFactory factory, callHistoryRepository repository) : repository_(repository), factory_(factory){}
-
-    vector<callHistory> getAllCallHistories(pqxx::work& tx)
+    static vector<callHistory> getAllCallHistories(pqxx::work& tx)
     {
-        return repository_.getCallHistoryVector(tx);
+        return callHistoryRepository::getCallHistoryVector(tx);
     }
 
     static string addCallHistory(pqxx::work& tx, int callerId, int calleeId)
