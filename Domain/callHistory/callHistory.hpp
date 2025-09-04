@@ -1,5 +1,7 @@
+
 #ifndef CALLHISTORY_HPP
 #define CALLHISTORY_HPP
+#include <utility>
 using namespace std;
 
 class callHistory
@@ -13,9 +15,7 @@ class callHistory
     string date;
 
     callHistory();
-    callHistory(int callId, int callerId, int calleeId, string date) : callId(callId),
-                                callerId(callerId), calleeId(calleeId), date(date){};
-
-
+    callHistory(const int& callId, const int& callerId, const int& calleeId, string& date) : callId(callId),
+                                callerId(callerId), calleeId(calleeId), date(std::move(date)){};
 };
 #endif // CALLHISTORY_HPP

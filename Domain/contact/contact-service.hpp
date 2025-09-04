@@ -35,12 +35,17 @@ namespace contactService
         return contactRepository::getIdByNumber(tx, number);
     }
 
+    inline pair<int, int> getIdsByNumbers(pqxx::work& tx, const string& callerNumber, const string& calleeNumber)
+    {
+        return contactRepository::getIdsFromNumbers(tx, callerNumber, calleeNumber);
+    }
+
     inline string editContact(pqxx::work& tx, const string& name, const int id)
     {
         return contactRepository::editContact(tx, name, id);
     }
 
-    inline string deleteCOntact(pqxx::work& tx, const string& number)
+    inline string deleteContact(pqxx::work& tx, const string& number)
     {
         return contactRepository::deleteContact(tx, number);
     }

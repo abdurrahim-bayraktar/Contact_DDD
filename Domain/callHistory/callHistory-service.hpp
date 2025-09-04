@@ -9,14 +9,19 @@ using namespace std;
 namespace  callHistoryService
 {
 
-    static vector<callHistory> getAllCallHistories(pqxx::work& tx)
+    inline vector<callHistory> getAllCallHistories(pqxx::work& tx)
     {
         return callHistoryRepository::getCallHistoryVector(tx);
     }
 
-    static string addCallHistory(pqxx::work& tx, int callerId, int calleeId)
+    inline string addCallHistory(pqxx::work& tx, int callerId, int calleeId)
     {
         return callHistoryRepository::addCallHistory(tx, callerId, calleeId);
     };
+
+    inline string deleteCallHistory(pqxx::work& tx, int callId)
+    {
+        return callHistoryRepository::deleteCallHistory(tx, callId);
+    }
 };
 #endif // CALLHISTORY_SERVICE_HPP

@@ -8,7 +8,7 @@ namespace contactRepository
 
 
 
-    static vector<contact> getAllRows(pqxx::work& tx)
+    inline vector<contact> getAllRows(pqxx::work& tx)
     {
 
         pqxx::result rows = tx.exec("SELECT * FROM contacts");
@@ -17,7 +17,7 @@ namespace contactRepository
         return objects;
     };
 
-    static string addContact(pqxx::work& tx, string& name, string& number, string& address)
+    inline string addContact(pqxx::work& tx, string& name, string& number, string& address)
     {
         pqxx::params params = contactFactory::createAddContactParam(name,number, address);
         tx.exec("INSERT INTO contacts (Name, Number, addrress) VALUES($1, $2, $3)", params );
@@ -25,39 +25,70 @@ namespace contactRepository
         return "200 OK";
     }
 
-    static string getNameById(pqxx::work& tx, const int id)
+    inline string getNameById(pqxx::work& tx, const int id)
     {
         pqxx::params param = contactFactory::createGetNameByIdParam(id);
         pqxx::result name = tx.exec("SELECT Name FROM contacts where ContactID = $1 LIMIT 1", param);
         return get<0>(name[0].as<string>());
     }
 
-    static int getIdByNumber(pqxx::work& tx, const string& number)
+    inline int getIdByNumber(pqxx::work& tx, const string& number)
     {
         const pqxx::params param = contactFactory::createGetIdByNumberParams(number);
         const pqxx::result Id = tx.exec("SELECT ContactID FROM contacts WHERE Number = $1", param);
         tx.commit();
-
+        if (Id[0][0].is_null())
+        {
+            cout << "ERROR: No such contact with ID";
+            return -1;
+        }
         return get<0>(Id[0].as<int>());
 
     }
 
-    static string editContact(pqxx::work& tx, const string& name, const int id)
+    inline string editContact(pqxx::work& tx, const string& name, const int id)
     {
         pqxx::params params = contactFactory::createEditContactParams(name, id);
-        tx.exec("UPDATE contacts SET Name = $1 WHERE ContactID = $2", params);
+        pqxx::result rows = tx.exec("UPDATE contacts SET Name = $1 WHERE ContactID = $2", params);
         tx.commit();
-
-        return "200 OK";
+        if (rows.affected_rows() != 0)
+        {
+            return "200 OK";
+        }
+        else {return "ERROR: ID not in db";}
     }
 
-    static string deleteContact(pqxx::work& tx, const string& number)
+    inline string deleteContact(pqxx::work& tx, const string& number)
     {
-        pqxx::params param = contactFactory::createDeleteContactParams(number);
-        tx.exec("DELETE FROM contacts WHERE Number = $1", param);
+        const pqxx::params param = contactFactory::createDeleteContactParams(number);
+        pqxx::result rows =  tx.exec("DELETE FROM contacts WHERE Number = $1", param);
         tx.commit();
-        return "200 OK";
+        if (rows.affected_rows() != 0)
+        {
+            return "200 OK";
+        }
+        else
+        {
+            return "ERROR: Number not in db";
+        }
     }
+
+    inline pair<int, int> getIdsFromNumbers(pqxx::work& tx, const string& callerNumber, const string& calleeNumber)
+    {
+        const pqxx::params params = contactFactory::createGetIdsByNumbersParams(callerNumber, calleeNumber);
+        pqxx::result rows = tx.exec("SELECT DISTINCT ON (Number) ContactID FROM contacts WHERE (Number = $1 OR Number = $2) ORDER BY Number, ContactID", params);
+        tx.commit();
+        if (rows[0][0].is_null()||rows[1][0].is_null())
+        {
+            cout << "ERROR: No such contact with Number";
+            pair<int, int> p = {-1,-1};
+            return p;
+        }
+        pair<int, int> pair = {rows[0][0].as<int>(), rows[1][0].as<int>()};
+        return pair;
+    }
+
+
 
 };
 

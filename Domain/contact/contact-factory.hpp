@@ -5,15 +5,15 @@
 namespace contactFactory
 {
 
-    inline contact createContactFromRow(int id, const string& name, const string& number, const string& address)
+    inline contact createContactFromRow(const int& id, const string& name, const string& number, const string& address)
     {
         contact contact(id, name, number, address);
         return contact;
     };
 
-    inline vector<contact> createContactVector(pqxx::result& rows)
+    inline vector<contact> createContactVector(const pqxx::result& rows)
     {
-        vector<contact> objects = vector<contact>();
+        auto objects = vector<contact>();
 
         for (auto row : rows)
         {
@@ -54,6 +54,12 @@ namespace contactFactory
     {
         pqxx::params param{number};
         return param;
+    }
+
+    inline pqxx::params createGetIdsByNumbersParams(const string& callerNumber, const string& calleeNumber)
+    {
+        pqxx::params params{callerNumber, calleeNumber};
+        return params;
     }
 
 };

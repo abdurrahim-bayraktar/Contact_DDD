@@ -3,7 +3,6 @@
 
 #include "../Domain/callHistory/callHistory-service.hpp"
 #include "../Domain/contact/contact-service.hpp"
-#include "../Domain/contact/contact-factory.hpp"
 using namespace std;
 
 namespace application
@@ -34,30 +33,39 @@ namespace application
         cout << contactService::addContact(tx, name, number, address) << endl;
     };
 
-    static void addCallHistory(pqxx::work& tx, string& callerNumber, string& CalleeNumber)
+    static void addCallHistory(pqxx::work& tx, const string& callerNumber, const string& CalleeNumber)
     {
-        int callerId = contactService::getIdByNumber(tx, callerNumber);
-        int calleeId = contactService::getIdByNumber(tx, CalleeNumber);
+        //TODO: implement with single query
 
-        string status = callHistoryService::addCallHistory(tx,callerId, calleeId);
-        cout << status << endl;
+        pair<int, int > ids = contactService::getIdsByNumbers(tx, callerNumber, CalleeNumber);
+        int callerId = ids.first;
+        int calleeId = ids.second;
+        if (callerId != -1)
+        {
+            string status = callHistoryService::addCallHistory(tx,callerId, calleeId);
+            cout << status << endl;
+        }
     };
 
-    static void deleteContact(pqxx::work& tx, string& number)
+    static void deleteContact(pqxx::work& tx, const string& number)
     {
         int contactId = contactService::getIdByNumber(tx, number);
-        callHistoryRepository::deleteCallHistoriesWithContactId(tx, contactId);
-        cout << contactRepository::deleteContact(tx, number) << endl;
+        if (contactId != -1)
+        {
+            callHistoryRepository::deleteCallHistoriesWithContactId(tx, contactId);
+            cout << contactRepository::deleteContact(tx, number) << endl;
+        }
+
     };
 
-    void deleteCallHistory(pqxx::work& tx, int& callId)
+    inline void deleteCallHistory(pqxx::work& tx, const int& callId)
     {
-        cout << callHistoryRepository::deleteCallHistory(tx, callId) << endl;
+        cout << callHistoryService::deleteCallHistory(tx, callId) << endl;
     };
 
-    static void editContact(pqxx::work& tx, string& newName, int& contactId)
+    static void editContact(pqxx::work& tx, const string& newName, const int& contactId)
     {
-        cout << contactRepository::editContact(tx, newName, contactId)<< endl;
+        cout << contactService::editContact(tx, newName, contactId)<< endl;
     };
 
 

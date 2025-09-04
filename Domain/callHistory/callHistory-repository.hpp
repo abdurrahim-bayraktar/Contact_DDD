@@ -13,13 +13,13 @@ namespace callHistoryRepository
 
     inline vector<callHistory> getCallHistoryVector(pqxx::work& tx)
     {
-        pqxx::result rows = tx.exec("SELECT * FROM calls");
+        const pqxx::result rows = tx.exec("SELECT * FROM calls");
         vector<callHistory> callHistories = callHistoryFactory::createCallHistoryVector(rows);
         return callHistories;
 
     }
 
-    inline string addCallHistory(pqxx::work& tx, int callerId, int calleeId)
+    inline string addCallHistory(pqxx::work& tx, const int& callerId, const int& calleeId)
     {
         pqxx::params params = callHistoryFactory::createAddCallHistoryParams(callerId, calleeId);
         tx.exec("INSERT INTO calls (caller, callee) VALUES ($1, $2)", params);
@@ -27,19 +27,23 @@ namespace callHistoryRepository
         return "200 OK";
     }
 
-    inline string deleteCallHistory(pqxx::work& tx, int callID)
+    inline string deleteCallHistory(pqxx::work& tx, const int& callID)
     {
-        pqxx::params params = callHistoryFactory::createDeleteCallHistoryParams(callID);
-        tx.exec("DELETE FROM calls WHERE CallID = $1", params);
+        const pqxx::params params = callHistoryFactory::createDeleteCallHistoryParams(callID);
+        pqxx::result result = tx.exec("DELETE FROM calls WHERE CallID = $1", params);
         tx.commit();
-        return "200 OK";
+        if (result.affected_rows() != 0)
+        {
+            return "200 OK";
+        }
+        return "ERROR: No such ID";
 
     }
 
     inline void deleteCallHistoriesWithContactId(pqxx::work& tx, const int& contactId)
     {
         pqxx::params params = callHistoryFactory::createDeleteCallHistoryParams(contactId);
-        tx.exec("DELETE FROM calls WHERE (CallerID = $1 OR CalleeID = $1)", params);
+        tx.exec("DELETE FROM calls WHERE (caller = $1 OR callee = $1)", params);
         tx.commit();
     }
 
