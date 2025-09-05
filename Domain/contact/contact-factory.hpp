@@ -75,6 +75,19 @@ namespace contactFactory
         return params;
     }
 
+    inline pqxx::params createGetNamesBydIdsParam(const unordered_map<int, string>& names)
+    {
+        pqxx::params params;
+
+        for (int i = 0; pair p : names)
+        {
+            int key = p.first;
+            params.append(key);
+            ++i;
+        }
+        return params;
+    }
+
     inline vector<int> createGetIdsByNumbersVector(const pqxx::result& rows)
     {
         vector<int> ids;
@@ -87,10 +100,44 @@ namespace contactFactory
         return ids;
     }
 
+
+
+	inline vector<int> createGetIdOrderedVector(const pqxx::result& rows, const vector<string>& numbers)
+    {
+        vector<int> ids;
+
+        for (auto row : rows)
+        {
+            string number = row["Number"].c_str();
+            int id = row["ContactID"].as<int>();
+
+            if (number == numbers[0])
+                ids[0] = id;
+            else if (number == numbers[1])
+                ids[1] = id;
+        }
+
+        return ids;
+    }
+
+    inline int createGetNamesByIdsMap(const pqxx::result& rows, unordered_map<int, string>& names)
+    {
+
+        for (auto row : rows)
+        {
+            string name = row["Name"].c_str();
+            int id = row["ContactID"].as<int>();
+
+            names[id] = name;
+        }
+
+        return names.size();
+    }
+
     inline string createQueryStringGetIds(const int& parameterNumber)
     {
 
-        string queryString = "SELECT DISTINCT ON (Number) ContactID FROM contacts WHERE Number = ANY (ARRAY[";
+        string queryString = "SELECT DISTINCT ON (Number) Number, ContactID FROM contacts WHERE Number = ANY (ARRAY[";
 
         for (unsigned int i = 0; i < parameterNumber; i++)
         {
@@ -107,6 +154,26 @@ namespace contactFactory
 
         return queryString;
 
+    }
+
+    inline string createQueryStringGetNames(const int& parameterNumber)
+    {
+        string queryString = "SELECT Name, ContactID FROM contacts WHERE ContactID = ANY (ARRAY[";
+
+        for (unsigned int i = 0; i < parameterNumber; i++)
+        {
+            queryString += "$";
+            queryString += std::to_string(i+1);
+
+            if (i != parameterNumber - 1)
+            {
+                queryString += ", ";
+            }
+
+        }
+        queryString += "]::int[])ORDER BY Number, ContactID";
+
+        return queryString;
     }
 
 };

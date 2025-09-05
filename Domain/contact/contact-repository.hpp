@@ -5,9 +5,6 @@
 
 namespace contactRepository
 {
-
-
-
     inline vector<contact> getAllRows(pqxx::work& tx)
     {
         pqxx::result rows = tx.exec("SELECT * FROM contacts");
@@ -18,9 +15,9 @@ namespace contactRepository
 
     inline string addContact(pqxx::work& tx, string& name, string& number, string& address)
     {
-        pqxx::params params = contactFactory::createAddContactParam(name,number, address);
-        tx.exec("INSERT INTO contacts (Name, Number, addrress) VALUES($1, $2, $3)", params );
-        tx.commit();
+        pqxx::params params = contactFactory::createAddContactParam(name, number, address);
+        tx.exec("INSERT INTO contacts (Name, Number, addrress) VALUES($1, $2, $3)", params);
+
 
         return "200 OK";
     }
@@ -37,7 +34,7 @@ namespace contactRepository
     {
         const pqxx::params param = contactFactory::createGetIdByNumberParams(number);
         const pqxx::result Id = tx.exec("SELECT ContactID FROM contacts WHERE Number = $1", param);
-        tx.commit();
+
 
         if (Id[0][0].is_null())
         {
@@ -47,28 +44,25 @@ namespace contactRepository
         }
 
         return get<0>(Id[0].as<int>());
-
     }
-
-    inline
 
     inline string editContact(pqxx::work& tx, const string& name, const int id)
     {
         pqxx::params params = contactFactory::createEditContactParams(name, id);
         pqxx::result rows = tx.exec("UPDATE contacts SET Name = $1 WHERE ContactID = $2", params);
-        tx.commit();
+
         if (rows.affected_rows() != 0)
         {
             return "200 OK";
         }
-        else {return "ERROR: ID not in db";}
+        else { return "ERROR: ID not in db"; }
     }
 
     inline string deleteContact(pqxx::work& tx, const string& number)
     {
         const pqxx::params param = contactFactory::createDeleteContactParams(number);
-        pqxx::result rows =  tx.exec("DELETE FROM contacts WHERE Number = $1", param);
-        tx.commit();
+        pqxx::result rows = tx.exec("DELETE FROM contacts WHERE Number = $1", param);
+
         if (rows.affected_rows() != 0)
         {
             return "200 OK";
@@ -87,14 +81,22 @@ namespace contactRepository
 
         pqxx::result rows = tx.exec(queryString, params);
 
-        vector<int> idVector = contactFactory::createGetIdsByNumbersVector(rows);
-        tx.commit();
+        vector<int> idVector = contactFactory::createGetIdOrderedVector(rows, numbers);
+
 
         return idVector;
     }
 
+    inline int getNamesByIds(pqxx::work& tx, unordered_map<int, string>& names)
+    {
+        const pqxx::params params = contactFactory::createGetNamesBydIdsParam(names);
 
+        const string queryString = contactFactory::createQueryStringGetNames(params.size());
 
+        pqxx::result rows = tx.exec(queryString, params);
+
+        return contactFactory::createGetNamesByIdsMap(rows, names);
+    }
 };
 
 

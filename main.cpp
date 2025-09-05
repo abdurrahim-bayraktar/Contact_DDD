@@ -67,16 +67,7 @@ int main()
 
     connectionPool pool(poolString, 5);
 
-
-    // auto conn = pool.acquire();
-    // pqxx::work tx(*conn);
-    // tempUtility2(tx);
-    // pool.release(conn);
-
-
-
     //menu:
-
     while (true)
     {
         
@@ -104,7 +95,9 @@ int main()
 
                 printContacts(contacts);
 
+                tx.commit();
                 pool.release(conn);
+
                 break;
 
             }
@@ -116,7 +109,10 @@ int main()
                 
                 auto callHistories = application::getCallHistory(tx);
                 printCallHistory(callHistories);
+
+                tx.commit();
                 pool.release(conn);
+
                 break;
             }
 
@@ -138,7 +134,10 @@ int main()
                 getline(cin, calleeID);
 
                 application::addCallHistory(tx, callerID, calleeID);
+
+                tx.commit();
                 pool.release(conn);
+
                 break;
             }
 
@@ -166,7 +165,10 @@ int main()
                 cout << "write the address of the contact (char < 50)";
                 getline(cin, address);
                 application::addContact(tx, name, number, address);
+
+                tx.commit();
                 pool.release(conn);
+
                 break;
             }
 
@@ -189,7 +191,9 @@ int main()
 
                 application::editContact(tx, nameToChange, contactId);
 
+                tx.commit();
                 pool.release(conn);
+
                 break;
 
             }
@@ -209,7 +213,10 @@ int main()
                 cin.ignore(1000,'\n');
 
                 application::deleteCallHistory(tx, callID);
+
+                tx.commit();
                 pool.release(conn);
+
                 break;
             }
 
@@ -227,7 +234,10 @@ int main()
                 cin.ignore(1000,'\n');
 
                 application::deleteContact(tx, contactToDelete);
+
+                tx.commit();
                 pool.release(conn);
+
                 break;
             }
         default: ;

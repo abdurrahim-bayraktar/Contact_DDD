@@ -1,0 +1,9 @@
+#ifndef CONTACT_DDD_CONTACT_INFO_HPP
+#define CONTACT_DDD_CONTACT_INFO_HPP
+
+struct ContactInfo
+{
+
+};
+
+#endif //CONTACT_DDD_CONTACT_INFO_HPP

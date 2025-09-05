@@ -2,14 +2,17 @@
 #ifndef CALLHISTORY_HPP
 #define CALLHISTORY_HPP
 #include <utility>
+#include "value-objects/contact-info.hpp"
 using namespace std;
 
 class callHistory
 {
     public:
+
     int callId;
     int callerId;
     int calleeId;
+    ContactInfo contactInfo;
     string callerName;
     string calleeName;
     string date;

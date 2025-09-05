@@ -17,12 +17,18 @@ namespace application
     static vector<callHistory> getCallHistory(pqxx::work& tx)
     {
         vector<callHistory>histories = callHistoryService::getAllCallHistories(tx);
+
         for (int i = 0; callHistory& call : histories)
         {
-            //TODO:handled with double leftjoin on foreign keys
-            histories[i].callerName = contactService::getNameById(tx, call.callerId);
+            vector<int> ids = {call.callerId, call.calleeId};
+            unordered_map<int, string> names;
+            names[ids[0]];
+            names[ids[1]];
 
-            histories[i].calleeName = contactService::getNameById(tx, call.calleeId);
+            contactService::getNamesByIds(tx, names);
+
+            histories[i].callerName = names[ids[0]];
+            histories[i].calleeName = names[ids[1]];
             ++i;
         }
         return histories;
@@ -52,7 +58,6 @@ namespace application
 
         string status = callHistoryService::addCallHistory(tx,callerId, calleeId);
         cout << status << endl;
-
     };
 
     static void deleteContact(pqxx::work& tx, const string& number)

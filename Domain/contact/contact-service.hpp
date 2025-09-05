@@ -58,8 +58,14 @@ namespace contactService
         return contactRepository::deleteContact(tx, number);
     }
 
-    //inline pair<string, string> getNamesByIds(pqxx::work& tx, const& int id)
-
+    inline void getNamesByIds(pqxx::work& tx, unordered_map<int, string>& names)
+    {
+        contactRepository::getNamesByIds(tx, names);
+        if (names.empty())
+        {
+            cout << "ERROR: NO NAME BY IDS";
+        }
+    }
 };
 
 #endif // CONTACT_SERVICE_HPP

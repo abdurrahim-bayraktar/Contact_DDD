@@ -15,6 +15,7 @@ add_executable(Contact_DDD main.cpp
         Domain/contact/contact.hpp
         Domain/contact/contact-factory.hpp
         Domain/contact/contact-repository.hpp
-        application/application.hpp)
+        application/application.hpp
+        Domain/callHistory/value-objects/contact-info.hpp)
 
 target_link_libraries(Contact_DDD PRIVATE libpqxx::pqxx)
