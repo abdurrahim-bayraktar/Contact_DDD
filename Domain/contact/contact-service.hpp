@@ -58,7 +58,8 @@ namespace contactService
         return contactRepository::deleteContact(tx, number);
     }
 
-    inline void getNamesByIds(pqxx::work& tx, unordered_map<int, string>& names)
+    //deprecated
+    [[maybe_unused]] inline void getNamesByIds(pqxx::work& tx, unordered_map<int, string>& names)
     {
         contactRepository::getNamesByIds(tx, names);
         if (names.empty())

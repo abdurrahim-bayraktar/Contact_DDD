@@ -14,9 +14,9 @@ namespace  callHistoryService
         return callHistoryRepository::getCallHistoryVector(tx);
     }
 
-    inline string addCallHistory(pqxx::work& tx, int callerId, int calleeId)
+    inline string addCallHistory(pqxx::work& tx, int otherId, bool isIncoming)
     {
-        return callHistoryRepository::addCallHistory(tx, callerId, calleeId);
+        return callHistoryRepository::addCallHistory(tx, otherId, isIncoming);
     };
 
     inline string deleteCallHistory(pqxx::work& tx, int callId)

@@ -8,8 +8,8 @@ namespace callHistoryFactory
 {
     inline callHistory createCallHistoryObject(const pqxx::row& row)
     {
-        auto[callId, callerId, calleeId, date] = row.as<int, int , int, string>();
-        callHistory callHistory(callId, callerId, calleeId, date);
+        auto[callId, otherContact, date, isIncoming] = row.as<int, int, string, bool>();
+        callHistory callHistory(callId, otherContact, isIncoming, date);
         return callHistory;
     }
 
@@ -23,9 +23,9 @@ namespace callHistoryFactory
         return callHistories;
     }
 
-    inline pqxx::params createAddCallHistoryParams(const int& callerId, const int& calleeId)
+    inline pqxx::params createAddCallHistoryParams(const int& otherContact, bool isIncoming)
     {
-        pqxx::params params{callerId, calleeId};
+        pqxx::params params{otherContact, isIncoming};
         return params;
     }
 

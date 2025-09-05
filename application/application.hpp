@@ -14,49 +14,54 @@ namespace application
         return contactService::getAllContact(tx);
     };
 
-    static vector<callHistory> getCallHistory(pqxx::work& tx)
+
+
+    // static vector<callHistory> getCallHistory(pqxx::work& tx)
+    // {
+    //     vector<callHistory>histories = callHistoryService::getAllCallHistories(tx);
+    //
+    //     for (int i = 0; callHistory& call : histories)
+    //     {
+    //         vector<int> ids = {call.callerId, call.calleeId};
+    //         unordered_map<int, string> names;
+    //         names[ids[0]];
+    //         names[ids[1]];
+    //
+    //         contactService::getNamesByIds(tx, names);
+    //
+    //         histories[i].callerName = names[ids[0]];
+    //         histories[i].calleeName = names[ids[1]];
+    //         ++i;
+    //     }
+    //     return histories;
+    // };
+
+    inline vector<callHistory> getCallHistory(pqxx::work& tx)
     {
         vector<callHistory>histories = callHistoryService::getAllCallHistories(tx);
 
         for (int i = 0; callHistory& call : histories)
         {
-            vector<int> ids = {call.callerId, call.calleeId};
-            unordered_map<int, string> names;
-            names[ids[0]];
-            names[ids[1]];
-
-            contactService::getNamesByIds(tx, names);
-
-            histories[i].callerName = names[ids[0]];
-            histories[i].calleeName = names[ids[1]];
+            call.otherName = contactService::getNameById(tx, call.otherContactId);
             ++i;
         }
-        return histories;
-    };
+    return histories;
+
+    }
 
     static void addContact(pqxx::work& tx, string& name, string& number, string& address)
     {
         cout << contactService::addContact(tx, name, number, address) << endl;
     };
 
-    static void addCallHistory(pqxx::work& tx, const string& callerNumber, const string& CalleeNumber)
+    static void addCallHistory(pqxx::work& tx, const string& otherContactNumber, bool isIncoming)
     {
 
-        vector<string> numbers;
-        numbers.push_back(callerNumber);
-        numbers.push_back(CalleeNumber);
 
-        vector<int> ids = contactService::getIdsByNumbers(tx, numbers);
 
-        if (ids.empty())
-        {
-            return;
-        }
+        int otherId = contactService::getIdByNumber(tx, otherContactNumber);
 
-        int callerId = ids[0]; //is it certain these two won't be switched?
-        int calleeId = ids[1];
-
-        string status = callHistoryService::addCallHistory(tx,callerId, calleeId);
+        string status = callHistoryService::addCallHistory(tx, otherId, isIncoming);
         cout << status << endl;
     };
 

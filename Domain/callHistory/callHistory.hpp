@@ -10,15 +10,14 @@ class callHistory
     public:
 
     int callId;
-    int callerId;
-    int calleeId;
-    ContactInfo contactInfo;
-    string callerName;
-    string calleeName;
+    int otherContactId;
+    bool isIncoming;
+    contactInfo Info;
+    string otherName;
     string date;
 
     callHistory();
-    callHistory(const int& callId, const int& callerId, const int& calleeId, string& date) : callId(callId),
-                                callerId(callerId), calleeId(calleeId), date(std::move(date)){};
+    callHistory(const int& callId, const int& otherContactId, const bool isIncoming, string& date) : callId(callId),
+                                otherContactId(otherContactId), isIncoming(isIncoming), date(std::move(date)){};
 };
 #endif // CALLHISTORY_HPP

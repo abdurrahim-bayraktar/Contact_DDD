@@ -23,6 +23,8 @@ void tempUtility2(pqxx::work& tx)
     tx.commit();
 }
 
+
+
 void printContacts(const vector<contact>& contacts)
 {
     cout << left << setw(3)<< "ID";
@@ -44,16 +46,24 @@ void printCallHistory(const vector<callHistory>& callHistories)
 {
     cout << left << setw(3)<< "CALL ID";
     cout<< "   ";
-    cout << right <<setw(10) <<"caller name" << " " << setw(17) <<"callee name"<< " ";
+    cout << right <<setw(10) <<"contact name" << " " << setw(11) <<"direction"<< " ";
     cout << setw(20) <<"date" << endl;
 
     for (const auto& callHistory : callHistories)
     {
         cout <<left << setw(4)<< callHistory.callId;
         cout << "   ";
-        cout << right << setw(10) << callHistory.callerName;
-        cout << " " << setw(20) << callHistory.calleeName;
-        cout << " " << setw(15) << callHistory.date << endl;
+        cout << right << setw(15) << callHistory.otherName;
+
+        if (callHistory.isIncoming)
+        {
+            cout << " " << setw(10) << "incoming";
+        }
+        else
+        {
+            cout << " " << setw(10) << "outgoing";
+        }
+        cout << " " << setw(30) << callHistory.date << endl;
     }
 };
 
@@ -124,16 +134,28 @@ int main()
                 auto contacts = application::getContacts(tx);
                 printContacts(contacts);
 
+                bool isIncoming;
+                cout << "call:0 or receive call:1\n";
+                int callOrReceive= -1;
+                cin >> callOrReceive;
+                cin.ignore(1000,'\n');
 
-                cout << "what is the calling number?\n";
-                string callerID;
-                getline(cin, callerID);
 
-                cout << "what is the number being called\n";
-                string calleeID;
-                getline(cin, calleeID);
+                if (callOrReceive == 0)
+                {
+                    cout << "what number would you like to call\n";
+                    isIncoming = false;
+                }
+                else
+                {
+                    cout << "what number is calling you\n";
+                    isIncoming = true;
+                }
 
-                application::addCallHistory(tx, callerID, calleeID);
+                string contactNumber;
+                getline(cin, contactNumber);
+
+                application::addCallHistory(tx, contactNumber, callOrReceive);
 
                 tx.commit();
                 pool.release(conn);

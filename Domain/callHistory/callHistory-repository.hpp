@@ -12,15 +12,15 @@ namespace callHistoryRepository
 {
     inline vector<callHistory> getCallHistoryVector(pqxx::work& tx)
     {
-        const pqxx::result rows = tx.exec("SELECT * FROM calls");
+        const pqxx::result rows = tx.exec("SELECT callid, othercontact, time, isincoming FROM calls");
         vector<callHistory> callHistories = callHistoryFactory::createCallHistoryVector(rows);
         return callHistories;
     }
 
-    inline string addCallHistory(pqxx::work& tx, const int& callerId, const int& calleeId)
+    inline string addCallHistory(pqxx::work& tx, const int& otherContact, bool isIncoming)
     {
-        pqxx::params params = callHistoryFactory::createAddCallHistoryParams(callerId, calleeId);
-        tx.exec("INSERT INTO calls (caller, callee) VALUES ($1, $2)", params);
+        pqxx::params params = callHistoryFactory::createAddCallHistoryParams(otherContact, isIncoming);
+        tx.exec("INSERT INTO calls (otherContact, isIncoming) VALUES ($1, $2)", params);
 
         return "200 OK";
     }
@@ -39,7 +39,7 @@ namespace callHistoryRepository
     inline void deleteCallHistoriesWithContactId(pqxx::work& tx, const int& contactId)
     {
         pqxx::params params = callHistoryFactory::createDeleteCallHistoryParams(contactId);
-        tx.exec("DELETE FROM calls WHERE (caller = $1 OR callee = $1)", params);
+        tx.exec("DELETE FROM calls WHERE othercontact = $1", params);
     }
 };
 
