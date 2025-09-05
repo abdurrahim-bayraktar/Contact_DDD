@@ -14,7 +14,9 @@ namespace callHistoryRepository
     {
         const pqxx::result rows = tx.exec("SELECT callid, othercontact, callee, time FROM calls");
         vector<callHistory> callHistories = callHistoryFactory::createCallHistoryVector(rows);
+
         return callHistories;
+
     }
 
     inline string addCallHistory(pqxx::work& tx, const int& callerId, const int& calleeId)
