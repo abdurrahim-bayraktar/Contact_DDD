@@ -20,7 +20,7 @@ namespace callHistoryRepository
     inline string addCallHistory(pqxx::work& tx, const int& otherContact, bool isIncoming)
     {
         pqxx::params params = callHistoryFactory::createAddCallHistoryParams(otherContact, isIncoming);
-        tx.exec("INSERT INTO calls (otherContact, isIncoming) VALUES ($1, $2)", params);
+        tx.exec("INSERT INTO calls (otherContact, isIncoming, callee) VALUES ($1, $2, 0)", params);
 
         return "200 OK";
     }
