@@ -125,14 +125,13 @@ int main()
     });
 
 
-     CROW_ROUTE(app, "/contacts/add").methods("POST"_method)([&pool](const crow::request& req)
+    CROW_ROUTE(app, "/contacts/add").methods("POST"_method)([&pool](const crow::request& req)
     {
          auto conn = pool.acquire();
          pqxx::work tx(*conn);
 
          json parsedContact = json::parse(req.body, nullptr, false);
-
-         if (parsedContact.is_discarded() || !parsedContact.contains("id"))
+         if (!parsedContact.contains("name"))
          {
              crow::response bad(400);
              bad.add_header("Access-Control-Allow-Origin", "http://localhost:8080");
@@ -140,9 +139,18 @@ int main()
              bad.write(R"({"error":"Invalid JSON. Expect {\"id\":number}."})");
              return bad;
          }
+         string number = parsedContact.at("number").get<std::string>();
 
+         if (!phoneNumberIsValid(number))
+         {
+             crow::response bad(400);
+             bad.add_header("Access-Control-Allow-Origin", "http://localhost:8080");
+             bad.add_header("Content-Type", "application/json");
+             bad.write(R"({"error":"not a valid phone number."})");
+             return bad;
+         }
          application::addContact(tx, parsedContact.at("name").get<std::string>(),
-             parsedContact.at("number").get<std::string>(),
+             number,
              parsedContact.at("address").get<std::string>());
 
          tx.commit();
@@ -156,10 +164,53 @@ int main()
      });
 
 
-    // CROW_ROUTE(app, "/callHistory").methods("GET"_method)([&pool](const crow::request& req)
-    //     {});
+    CROW_ROUTE(app, "/callHistory/add").methods("POST"_method)([&pool](const crow::request& req)
+    {
+        auto conn = pool.acquire();
+        pqxx::work tx(*conn);
 
+        json parsedCall = json::parse(req.body, nullptr, false);
+        if (!parsedCall.contains("number"))
+        {
+             crow::response bad(400);
+             bad.write(R"({"error":"Invalid JSON. Expect {\"number\":number}."})");
+             return bad;
+        }
 
+        application::addCallHistory(tx, parsedCall.at("number").get<std::string>(),
+         parsedCall.at("isIncoming").get<bool>());
+
+        tx.commit();
+        pool.release(conn);
+
+        json result;
+        result["result"] = "200 OK";
+        crow::response response(result.dump());
+        return response;
+
+    });
+
+    CROW_ROUTE(app, "/callHistory/update").methods("POST"_method)([&pool](const crow::request& req)
+    {
+        auto conn = pool.acquire();
+        pqxx::work tx(*conn);
+
+        json parsedInfo = json::parse(req.body, nullptr, false);
+
+        if (!parsedInfo.contains("id"))
+        {
+             crow::response bad(400);
+             bad.write(R"({"error":"Invalid JSON. Expect {\"id\":number}."})");
+             return bad;
+        }
+
+        application::editContact(tx, parsedInfo.at("name").get<string>(),
+            parsedInfo.at("id").get<int>());
+
+        tx.commit();
+        pool.release(conn);
+        return crow::response("200 OK");
+    });
 
 
     app.port(8080).multithreaded().run();
@@ -178,74 +229,6 @@ int main()
 
         switch (menuSelector)
         {
-        case 2: //create a call
-            {
-                auto conn = pool.acquire();
-                pqxx::work tx(*conn);
-
-                auto contacts = application::getContacts(tx);
-
-
-                bool isIncoming;
-                cout << "call:0 or receive call:1\n";
-                int callOrReceive= -1;
-                cin >> callOrReceive;
-                cin.ignore(1000,'\n');
-
-
-                if (callOrReceive == 0)
-                {
-                    cout << "what number would you like to call\n";
-                    isIncoming = false;
-                }
-                else
-                {
-                    cout << "what number is calling you\n";
-                    isIncoming = true;
-                }
-
-                string contactNumber;
-                getline(cin, contactNumber);
-
-                application::addCallHistory(tx, contactNumber, isIncoming);
-
-                tx.commit();
-                pool.release(conn);
-
-                break;
-            }
-
-        case 3: //create a contact
-            {
-                auto conn = pool.acquire();
-                pqxx::work tx(*conn);
-                
-
-                cout << "creating new contact...\n";
-                cout << "write the name of the contact\n";
-                string name;
-                getline(cin, name);
-                cout << "write the number of the contact\n Valid form is: +XX-XXX-XXX-XX-XX\n";
-                string number;
-                getline(cin, number);
-
-                while (!phoneNumberIsValid(number))
-                {
-                    cout << "wrong format please try again! write break to exit\n";
-                    getline(cin, number);
-                    if (number == "break"){break;}
-                }
-                string address;
-                cout << "write the address of the contact (char < 50)";
-                getline(cin, address);
-                application::addContact(tx, name, number, address);
-
-                tx.commit();
-                pool.release(conn);
-
-                break;
-            }
-
         case 4: //update a contact
             {
                 auto conn = pool.acquire();
