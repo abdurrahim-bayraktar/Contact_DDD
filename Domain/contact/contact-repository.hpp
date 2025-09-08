@@ -13,7 +13,7 @@ namespace contactRepository
         return objects;
     };
 
-    inline string addContact(pqxx::work& tx, string& name, string& number, string& address)
+    inline string addContact(pqxx::work& tx, const string& name, const  string& number, const string& address)
     {
         pqxx::params params = contactFactory::createAddContactParam(name, number, address);
         tx.exec("INSERT INTO contacts (Name, Number, addrress) VALUES($1, $2, $3)", params);

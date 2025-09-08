@@ -25,7 +25,7 @@ namespace contactFactory
 
     }
 
-    inline pqxx::params createAddContactParam(string& name, string& number, string& address)
+    inline pqxx::params createAddContactParam(const string& name, const string& number, const string& address)
     {
         pqxx::params params{name,number, address};
         return params;

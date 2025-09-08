@@ -20,7 +20,7 @@ namespace contactService
         return contactRepository::getAllRows(tx);
     };
 
-    inline string addContact(pqxx::work& tx, string& name, string& number, string& address)
+    inline string addContact(pqxx::work& tx, const string& name, const string& number, const string& address)
     {
         return contactRepository::addContact(tx, name, number, address);
     };

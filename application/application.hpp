@@ -49,7 +49,7 @@ namespace application
 
     }
 
-    static void addContact(pqxx::work& tx, string& name, string& number, string& address)
+    static void addContact(pqxx::work& tx, const string& name, const string& number, const string& address)
     {
         cout << contactService::addContact(tx, name, number, address) << endl;
     };

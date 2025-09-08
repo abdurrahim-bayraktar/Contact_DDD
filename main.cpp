@@ -4,6 +4,10 @@
 #include "./application/application.hpp"
 #include "./infrastructure/connectionPooling.hpp"
 #include <regex>
+#include <nlohmann/json.hpp>
+#include "crow.h"
+
+using json = nlohmann::json;
 
 bool phoneNumberIsValid(const string& phoneNumber)
 {
@@ -25,47 +29,47 @@ void tempUtility2(pqxx::work& tx)
 
 
 
-void printContacts(const vector<contact>& contacts)
-{
-    cout << left << setw(3)<< "ID";
-    cout<< "   ";
-    cout << right <<setw(10) <<"Name" << " " << setw(17) <<"Number"<< " ";
-    cout << setw(20) <<"address" << endl;
+// void printContacts(const vector<contact>& contacts)
+// {
+//     cout << left << setw(3)<< "ID";
+//     cout<< "   ";
+//     cout << right <<setw(10) <<"Name" << " " << setw(17) <<"Number"<< " ";
+//     cout << setw(20) <<"address" << endl;
+//
+//     for (auto& contact : contacts)
+//     {
+//         cout <<left << setw(4)<< contact.id;
+//         cout << "   ";
+//         cout << right << setw(10) << contact.name;
+//         cout << " " << setw(20) << contact.number;
+//         cout << " " << setw(15) << contact.address << endl;
+//     }
+// };
 
-    for (auto& contact : contacts)
-    {
-        cout <<left << setw(4)<< contact.id;
-        cout << "   ";
-        cout << right << setw(10) << contact.name;
-        cout << " " << setw(20) << contact.number;
-        cout << " " << setw(15) << contact.address << endl;
-    }
-};
-
-void printCallHistory(const vector<callHistory>& callHistories)
-{
-    cout << left << setw(3)<< "CALL ID";
-    cout<< "   ";
-    cout << right <<setw(10) <<"contact name" << " " << setw(11) <<"direction"<< " ";
-    cout << setw(20) <<"date" << endl;
-
-    for (const auto& callHistory : callHistories)
-    {
-        cout <<left << setw(4)<< callHistory.callId;
-        cout << "   ";
-        cout << right << setw(15) << callHistory.otherName;
-
-        if (callHistory.isIncoming)
-        {
-            cout << " " << setw(10) << "incoming";
-        }
-        else
-        {
-            cout << " " << setw(10) << "outgoing";
-        }
-        cout << " " << setw(30) << callHistory.date << endl;
-    }
-};
+// void printCallHistory(const vector<callHistory>& callHistories)
+// {
+//     cout << left << setw(3)<< "CALL ID";
+//     cout<< "   ";
+//     cout << right <<setw(10) <<"contact name" << " " << setw(11) <<"direction"<< " ";
+//     cout << setw(20) <<"date" << endl;
+//
+//     for (const auto& callHistory : callHistories)
+//     {
+//         cout <<left << setw(4)<< callHistory.callId;
+//         cout << "   ";
+//         cout << right << setw(15) << callHistory.otherName;
+//
+//         if (callHistory.isIncoming)
+//         {
+//             cout << " " << setw(10) << "incoming";
+//         }
+//         else
+//         {
+//             cout << " " << setw(10) << "outgoing";
+//         }
+//         cout << " " << setw(30) << callHistory.date << endl;
+//     }
+// };
 
 
 int main()
@@ -77,17 +81,95 @@ int main()
 
     connectionPool pool(poolString, 5);
 
+    crow::SimpleApp app;
+
+    CROW_ROUTE(app, "/contacts").methods("GET"_method)([&pool](const crow::request& req)
+    {
+        json contacts;
+        auto conn = pool.acquire();
+        pqxx::work tx(*conn);
+        vector<contact> contactList = contactService::getAllContact(tx);
+
+        for (auto& contact : contactList)
+        {
+            contacts.push_back({ {"id", contact.id}, {"name", contact.name},
+                {"number", contact.number}, {"address", contact.address} });
+        }
+
+        tx.commit();
+        pool.release(conn);
+
+        return crow::response(contacts.dump());
+    });
+
+    CROW_ROUTE(app, "/callHistory").methods("GET"_method)([&pool](const crow::request& req)
+    {
+
+        json calls;
+
+        auto conn = pool.acquire();
+        pqxx::work tx(*conn);
+
+        auto callHistories = application::getCallHistory(tx);
+
+        for (auto& call : callHistories)
+        {
+            calls.push_back({ {"id", call.callId}, {"contactID", call.otherContactId},
+                {"contactName", call.otherName}, {"time", call.date} });
+        }
+
+        tx.commit();
+        pool.release(conn);
+
+        return crow::response(calls.dump());
+    });
+
+
+     CROW_ROUTE(app, "/contacts/add").methods("POST"_method)([&pool](const crow::request& req)
+    {
+         auto conn = pool.acquire();
+         pqxx::work tx(*conn);
+
+         json parsedContact = json::parse(req.body, nullptr, false);
+
+         if (parsedContact.is_discarded() || !parsedContact.contains("id"))
+         {
+             crow::response bad(400);
+             bad.add_header("Access-Control-Allow-Origin", "http://localhost:8080");
+             bad.add_header("Content-Type", "application/json");
+             bad.write(R"({"error":"Invalid JSON. Expect {\"id\":number}."})");
+             return bad;
+         }
+
+         application::addContact(tx, parsedContact.at("name").get<std::string>(),
+             parsedContact.at("number").get<std::string>(),
+             parsedContact.at("address").get<std::string>());
+
+         tx.commit();
+         pool.release(conn);
+
+         json result;
+         result["result"] = "200 OK";
+         crow::response response(result.dump());
+         return response;
+         
+     });
+
+
+    // CROW_ROUTE(app, "/callHistory").methods("GET"_method)([&pool](const crow::request& req)
+    //     {});
+
+
+
+
+    app.port(8080).multithreaded().run();
+
+
+
+
     //menu:
     while (true)
     {
-        
-        cout << "WELCOME TO CONTACTS APP."<< "\n PLEASE SELECT FROM BELOW MENU WHAT WOULD YOU LIKE TO DO" << endl;
-
-        cout << "MENU:\n 0 = SEE CONTACTS\n 1 = SEE CALLS\n 2 = MAKE A CALL\n 3 = ADD A CONTACT\n \
-4 = EDIT A CONTACT\n 5 = REMOVE A CALL\n 6 = DELETE A CONTACT\n";
-
-
-
         int menuSelector = 0;
         cin >> menuSelector;
         cin.ignore(1000,'\n');
@@ -96,43 +178,13 @@ int main()
 
         switch (menuSelector)
         {
-        case 0: //print contacts
-            {
-                auto conn = pool.acquire();
-                pqxx::work tx(*conn);
-
-                auto contacts = application::getContacts(tx);
-
-                printContacts(contacts);
-
-                tx.commit();
-                pool.release(conn);
-
-                break;
-
-            }
-
-        case 1: //print calls
-            {
-                auto conn = pool.acquire();
-                pqxx::work tx(*conn);
-                
-                auto callHistories = application::getCallHistory(tx);
-                printCallHistory(callHistories);
-
-                tx.commit();
-                pool.release(conn);
-
-                break;
-            }
-
         case 2: //create a call
             {
                 auto conn = pool.acquire();
                 pqxx::work tx(*conn);
 
                 auto contacts = application::getContacts(tx);
-                printContacts(contacts);
+
 
                 bool isIncoming;
                 cout << "call:0 or receive call:1\n";
@@ -155,7 +207,7 @@ int main()
                 string contactNumber;
                 getline(cin, contactNumber);
 
-                application::addCallHistory(tx, contactNumber, callOrReceive);
+                application::addCallHistory(tx, contactNumber, isIncoming);
 
                 tx.commit();
                 pool.release(conn);
@@ -200,7 +252,7 @@ int main()
                 pqxx::work tx(*conn);
 
                 auto contacts = application::getContacts(tx);
-                printContacts(contacts);
+
 
                 cout << "what is the id of the contact you would like to change?\n";
                 int contactId;
@@ -226,7 +278,7 @@ int main()
                 pqxx::work tx(*conn);
                 
                 auto callHistories = application::getCallHistory(tx);
-                printCallHistory(callHistories);
+
 
                 cout << "enter the ID of the call you would like to delete" << endl;
 
@@ -248,7 +300,7 @@ int main()
                 pqxx::work tx(*conn);
 
                 auto contacts = application::getContacts(tx);
-                printContacts(contacts);
+
 
                 cout << "Enter the Number of the contact you would like to delete\n WARNING: RELATED CALLS WILL BE DELETED\n";
                 string contactToDelete;
