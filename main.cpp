@@ -190,22 +190,21 @@ int main()
 
     });
 
-    CROW_ROUTE(app, "/callHistory/update").methods("POST"_method)([&pool](const crow::request& req)
+    CROW_ROUTE(app, "/contacts/update/<int>").methods("POST"_method)([&pool](const crow::request& req, int contId)
     {
         auto conn = pool.acquire();
         pqxx::work tx(*conn);
 
         json parsedInfo = json::parse(req.body, nullptr, false);
 
-        if (!parsedInfo.contains("id"))
+        if (!parsedInfo.contains("name"))
         {
              crow::response bad(400);
              bad.write(R"({"error":"Invalid JSON. Expect {\"id\":number}."})");
              return bad;
         }
 
-        application::editContact(tx, parsedInfo.at("name").get<string>(),
-            parsedInfo.at("id").get<int>());
+        application::editContact(tx, parsedInfo.at("name").get<string>(),contId);
 
         tx.commit();
         pool.release(conn);
