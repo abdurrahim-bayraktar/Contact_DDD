@@ -15,36 +15,21 @@ bool phoneNumberIsValid(const string& phoneNumber)
     return regex_match(phoneNumber, patern);
 }
 
-void tempUtility(pqxx::work& tx)
+// void tempUtility(pqxx::work& tx)
+// {
+//     tx.exec("ALTER TABLE contacts ADD COLUMN addrress varchar(50)");
+//     tx.commit();
+// };
+//
+// void tempUtility2(pqxx::work& tx)
+// {
+//     tx.exec("UPDATE contacts SET addrress = 'a'");
+//     tx.commit();
+// }
+
+crow::response routeSelectSwitch(connectionPool& pool, const crow::request& req, int selector)
 {
-    tx.exec("ALTER TABLE contacts ADD COLUMN addrress varchar(50)");
-    tx.commit();
-};
-
-void tempUtility2(pqxx::work& tx)
-{
-    tx.exec("UPDATE contacts SET addrress = 'a'");
-    tx.commit();
-}
-
-
-
-int main()
-{
-
-    //initialization
-    string poolString{"dbname = contactsDB user = postgres password = postgres \
-      hostaddr = 127.0.0.1 port = 5432"};
-
-    connectionPool pool(poolString, 5);
-
-    crow::SimpleApp app;
-
-    CROW_ROUTE(app, "/").methods("GET"_method, "POST"_method)([&pool](const crow::request& req)
-    {
-
-
-        switch (stoi(req.get_header_value("operation")))
+    switch (selector)
         {
         default:{break;}
         case 0:
@@ -65,7 +50,7 @@ int main()
                 tx.commit();
                 pool.release(conn);
 
-                return crow::response(contacts.dump());
+                return {contacts.dump()};
             }
 
         case 1:
@@ -88,7 +73,7 @@ int main()
                 tx.commit();
                 pool.release(conn);
 
-                return crow::response(calls.dump());
+                return {calls.dump()};
             }
 
 
@@ -207,6 +192,28 @@ int main()
                 return res;
             }
         }
+}
+
+int main()
+{
+    unordered_map<string, int> actionSelectMap= {{"getContacts", 0},
+{"getCalls", 1},{"addContact", 2},{"addCall", 3}, {"updateContact", 4}, {"deleteContact", 5},
+    {"deleteCall", 6}};
+    //initialization
+    string poolString{"dbname = contactsDB user = postgres password = postgres \
+      hostaddr = 127.0.0.1 port = 5432"};
+
+    connectionPool pool(poolString, 5);
+
+    crow::SimpleApp app;
+
+    CROW_ROUTE(app, "/").methods("GET"_method, "POST"_method)([&pool, &actionSelectMap](const crow::request& req)
+    {
+        int selector = actionSelectMap.at(req.get_header_value("action"));
+
+        crow::response res =  routeSelectSwitch(pool, req, selector);
+
+        return res;
     });
 
     //get contacts 0
