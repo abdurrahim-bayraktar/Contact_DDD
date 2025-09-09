@@ -38,7 +38,7 @@ int main()
 
     crow::SimpleApp app;
 
-    //ge contacts
+    //get contacts
     CROW_ROUTE(app, "/contacts").methods("GET"_method)([&pool](const crow::request& req)
     {
         json contacts;
