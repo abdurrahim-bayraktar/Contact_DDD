@@ -58,10 +58,10 @@ namespace contactRepository
         else { return "ERROR: ID not in db"; }
     }
 
-    inline string deleteContact(pqxx::work& tx, const string& number)
+    inline string deleteContact(pqxx::work& tx, const int& contactId)
     {
-        const pqxx::params param = contactFactory::createDeleteContactParams(number);
-        pqxx::result rows = tx.exec("DELETE FROM contacts WHERE Number = $1", param);
+        const pqxx::params param = contactFactory::createDeleteContactParams(contactId);
+        pqxx::result rows = tx.exec("DELETE FROM contacts WHERE contactID = $1", param);
 
         if (rows.affected_rows() != 0)
         {

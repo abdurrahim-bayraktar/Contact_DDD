@@ -65,13 +65,13 @@ namespace application
         cout << status << endl;
     };
 
-    static void deleteContact(pqxx::work& tx, const string& number)
+    static void deleteContact(pqxx::work& tx, const int& contactId)
     {
-        int contactId = contactService::getIdByNumber(tx, number);
+
         if (contactId != -1)
         {
             callHistoryRepository::deleteCallHistoriesWithContactId(tx, contactId);
-            cout << contactRepository::deleteContact(tx, number) << endl;
+            cout << contactRepository::deleteContact(tx, contactId) << endl;
         }
 
     };

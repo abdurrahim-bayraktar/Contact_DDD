@@ -50,7 +50,7 @@ namespace contactFactory
         return params;
     }
 
-    inline pqxx::params createDeleteContactParams(const string& number)
+    inline pqxx::params createDeleteContactParams(const int& number)
     {
         pqxx::params param{number};
         return param;

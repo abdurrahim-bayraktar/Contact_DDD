@@ -83,6 +83,7 @@ int main()
 
     crow::SimpleApp app;
 
+    //ge contacts
     CROW_ROUTE(app, "/contacts").methods("GET"_method)([&pool](const crow::request& req)
     {
         json contacts;
@@ -102,6 +103,7 @@ int main()
         return crow::response(contacts.dump());
     });
 
+    //get call  histories
     CROW_ROUTE(app, "/callHistory").methods("GET"_method)([&pool](const crow::request& req)
     {
 
@@ -124,7 +126,7 @@ int main()
         return crow::response(calls.dump());
     });
 
-
+    //add a contact
     CROW_ROUTE(app, "/contacts/add").methods("POST"_method)([&pool](const crow::request& req)
     {
          auto conn = pool.acquire();
@@ -163,7 +165,7 @@ int main()
          
      });
 
-
+    //add a call
     CROW_ROUTE(app, "/callHistory/add").methods("POST"_method)([&pool](const crow::request& req)
     {
         auto conn = pool.acquire();
@@ -190,7 +192,8 @@ int main()
 
     });
 
-    CROW_ROUTE(app, "/contacts/update/<int>").methods("POST"_method)([&pool](const crow::request& req, int contId)
+    //update a contact
+    CROW_ROUTE(app, "/contacts/<int>/update").methods("POST"_method)([&pool](const crow::request& req, int contId)
     {
         auto conn = pool.acquire();
         pqxx::work tx(*conn);
@@ -211,105 +214,34 @@ int main()
         return crow::response("200 OK");
     });
 
+    //delete a contact
+    CROW_ROUTE(app, "/contacts/<int>/delete").methods("POST"_method)([&pool](const crow::request& req, int contactId)
+    {
+        auto conn = pool.acquire();
+        pqxx::work tx(*conn);
+
+        application::deleteContact(tx, contactId);
+        tx.commit();
+        pool.release(conn);
+        return crow::response("200 OK");
+
+    });
+
+    //delete a call
+    CROW_ROUTE(app, "/callHistory/<int>/delete").methods("POST"_method)([&pool](const crow::request& req, int callId)
+    {
+        auto conn = pool.acquire();
+        pqxx::work tx(*conn);
+
+        application::deleteCallHistory(tx, callId);
+
+        tx.commit();
+        pool.release(conn);
+
+        return crow::response("200 OK");
+
+    });
 
     app.port(8080).multithreaded().run();
-
-
-
-
-    //menu:
-    while (true)
-    {
-        int menuSelector = 0;
-        cin >> menuSelector;
-        cin.ignore(1000,'\n');
-
-
-
-        switch (menuSelector)
-        {
-        case 4: //update a contact
-            {
-                auto conn = pool.acquire();
-                pqxx::work tx(*conn);
-
-                auto contacts = application::getContacts(tx);
-
-
-                cout << "what is the id of the contact you would like to change?\n";
-                int contactId;
-                cin >> contactId;
-                cin.ignore(1000,'\n');
-
-                cout <<"what would you like to change the name to?\n";
-                string nameToChange;
-                getline(cin, nameToChange);
-
-                application::editContact(tx, nameToChange, contactId);
-
-                tx.commit();
-                pool.release(conn);
-
-                break;
-
-            }
-
-        case 5: // delete a call
-            {
-                auto conn = pool.acquire();
-                pqxx::work tx(*conn);
-                
-                auto callHistories = application::getCallHistory(tx);
-
-
-                cout << "enter the ID of the call you would like to delete" << endl;
-
-                int callID = 0;
-                cin >> callID;
-                cin.ignore(1000,'\n');
-
-                application::deleteCallHistory(tx, callID);
-
-                tx.commit();
-                pool.release(conn);
-
-                break;
-            }
-
-        case 6: // delete a contact
-            {
-                auto conn = pool.acquire();
-                pqxx::work tx(*conn);
-
-                auto contacts = application::getContacts(tx);
-
-
-                cout << "Enter the Number of the contact you would like to delete\n WARNING: RELATED CALLS WILL BE DELETED\n";
-                string contactToDelete;
-                cin >> contactToDelete;
-                cin.ignore(1000,'\n');
-
-                application::deleteContact(tx, contactToDelete);
-
-                tx.commit();
-                pool.release(conn);
-
-                break;
-            }
-        default: ;
-        }
-
-
-        int againSelector = 0;
-        cout<< "WOULD YOU LIKE TO SEE THE MENU AGAIN? 1 = YES, 0 = NO";
-
-        cin >> againSelector;
-        cin.ignore(1000,'\n');
-
-        if (againSelector != 1)
-        {
-            break;
-        }
-
-    }
+    
 }
