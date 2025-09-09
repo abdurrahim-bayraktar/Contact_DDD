@@ -192,6 +192,7 @@ crow::response routeSelectSwitch(connectionPool& pool, const crow::request& req,
                 return res;
             }
         }
+    return {"ERROR: not a valid action"};
 }
 
 int main()
@@ -215,8 +216,6 @@ int main()
 
         return res;
     });
-
-
 
     app.port(8080).multithreaded().run();
     
