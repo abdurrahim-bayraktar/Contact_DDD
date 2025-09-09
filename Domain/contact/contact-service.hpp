@@ -5,6 +5,7 @@
 #include "contact-factory.hpp"
 #include "contact-repository.hpp"
 #include <vector>
+#include <crow.h>
 
 using namespace std;
 
@@ -48,14 +49,38 @@ namespace contactService
 
     }
 
-    inline string editContact(pqxx::work& tx, const string& name, const int id)
+    inline crow::response editContact(pqxx::work& tx, const string& name, const int id)
     {
-        return contactRepository::editContact(tx, name, id);
+        crow::response res;
+        if (contactRepository::editContact(tx, name, id) == 0)
+        {
+            res.code = 404;
+            res.body =  "ERROR: id is not in db";
+            return res;
+        }
+        else
+        {
+            res.code = 200;
+            res.body =  "200 OK";
+            return res;
+        }
     }
 
-    inline string deleteContact(pqxx::work& tx, const string& number)
+    inline crow::response deleteContact(pqxx::work& tx, const int& number)
     {
-        return contactRepository::deleteContact(tx, number);
+        crow::response res;
+        if (contactRepository::deleteContact(tx, number) == 0 )
+        {
+            res.code = 404;
+            res.body =  "ERROR: id is not in db";
+            return res;
+        }
+        else
+        {
+            res.code = 200;
+            res.body =  "200 OK";
+            return res;
+        }
     }
 
     //deprecated

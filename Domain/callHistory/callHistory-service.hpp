@@ -4,6 +4,7 @@
 #include "callhistory-factory.hpp"
 #include "callHistory-repository.hpp"
 #include <vector>
+#include <crow.h>
 using namespace std;
 
 namespace  callHistoryService
@@ -19,9 +20,21 @@ namespace  callHistoryService
         return callHistoryRepository::addCallHistory(tx, otherId, isIncoming);
     };
 
-    inline string deleteCallHistory(pqxx::work& tx, int callId)
+    inline crow::response deleteCallHistory(pqxx::work& tx, int callId)
     {
-        return callHistoryRepository::deleteCallHistory(tx, callId);
+        crow::response res;
+        if (callHistoryRepository::deleteCallHistory(tx, callId) == 0)
+        {
+            res.code = 404;
+            res.body =  "ERROR: id is not in db";
+            return res;
+        }
+        else
+        {
+            res.code = 200;
+            res.body =  "200 OK";
+            return res;
+        }
     }
 };
 #endif // CALLHISTORY_SERVICE_HPP

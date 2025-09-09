@@ -25,15 +25,14 @@ namespace callHistoryRepository
         return "200 OK";
     }
 
-    inline string deleteCallHistory(pqxx::work& tx, const int& callID)
+    inline int deleteCallHistory(pqxx::work& tx, const int& callID)
     {
         const pqxx::params params = callHistoryFactory::createDeleteCallHistoryParams(callID);
+
         pqxx::result result = tx.exec("DELETE FROM calls WHERE CallID = $1", params);
-        if (result.affected_rows() != 0)
-        {
-            return "200 OK";
-        }
-        return "ERROR: No such ID";
+
+        return result.affected_rows();
+
     }
 
     inline void deleteCallHistoriesWithContactId(pqxx::work& tx, const int& contactId)

@@ -3,6 +3,8 @@
 
 #include "../Domain/callHistory/callHistory-service.hpp"
 #include "../Domain/contact/contact-service.hpp"
+#include <nlohmann/json.hpp>
+#include "crow.h"
 using namespace std;
 
 namespace application
@@ -65,25 +67,21 @@ namespace application
         cout << status << endl;
     };
 
-    static void deleteContact(pqxx::work& tx, const int& contactId)
+    static crow::response deleteContact(pqxx::work& tx, const int& contactId)
     {
 
-        if (contactId != -1)
-        {
-            callHistoryRepository::deleteCallHistoriesWithContactId(tx, contactId);
-            cout << contactRepository::deleteContact(tx, contactId) << endl;
-        }
-
+        callHistoryRepository::deleteCallHistoriesWithContactId(tx, contactId);
+        return contactService::deleteContact(tx, contactId);
     };
 
-    inline void deleteCallHistory(pqxx::work& tx, const int& callId)
+    inline crow::response deleteCallHistory(pqxx::work& tx, const int& callId)
     {
-        cout << callHistoryService::deleteCallHistory(tx, callId) << endl;
+        return callHistoryService::deleteCallHistory(tx, callId);
     };
 
-    static void editContact(pqxx::work& tx, const string& newName, const int& contactId)
+    static crow::response editContact(pqxx::work& tx, const string& newName, const int& contactId)
     {
-        cout << contactService::editContact(tx, newName, contactId)<< endl;
+        return contactService::editContact(tx, newName, contactId);
     };
 
 

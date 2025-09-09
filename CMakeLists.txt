@@ -4,6 +4,7 @@ project(Contact_DDD)
 set(CMAKE_CXX_STANDARD 20)
 
 find_package(libpqxx REQUIRED)
+find_package(Crow REQUIRED)
 
 add_executable(Contact_DDD main.cpp
         infrastructure/connectionPooling.hpp
@@ -19,3 +20,4 @@ add_executable(Contact_DDD main.cpp
         Domain/callHistory/value-objects/contact-info.hpp)
 
 target_link_libraries(Contact_DDD PRIVATE libpqxx::pqxx)
+target_link_libraries(Contact_DDD PRIVATE Crow::Crow)

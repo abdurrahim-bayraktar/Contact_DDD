@@ -27,51 +27,6 @@ void tempUtility2(pqxx::work& tx)
     tx.commit();
 }
 
-
-
-// void printContacts(const vector<contact>& contacts)
-// {
-//     cout << left << setw(3)<< "ID";
-//     cout<< "   ";
-//     cout << right <<setw(10) <<"Name" << " " << setw(17) <<"Number"<< " ";
-//     cout << setw(20) <<"address" << endl;
-//
-//     for (auto& contact : contacts)
-//     {
-//         cout <<left << setw(4)<< contact.id;
-//         cout << "   ";
-//         cout << right << setw(10) << contact.name;
-//         cout << " " << setw(20) << contact.number;
-//         cout << " " << setw(15) << contact.address << endl;
-//     }
-// };
-
-// void printCallHistory(const vector<callHistory>& callHistories)
-// {
-//     cout << left << setw(3)<< "CALL ID";
-//     cout<< "   ";
-//     cout << right <<setw(10) <<"contact name" << " " << setw(11) <<"direction"<< " ";
-//     cout << setw(20) <<"date" << endl;
-//
-//     for (const auto& callHistory : callHistories)
-//     {
-//         cout <<left << setw(4)<< callHistory.callId;
-//         cout << "   ";
-//         cout << right << setw(15) << callHistory.otherName;
-//
-//         if (callHistory.isIncoming)
-//         {
-//             cout << " " << setw(10) << "incoming";
-//         }
-//         else
-//         {
-//             cout << " " << setw(10) << "outgoing";
-//         }
-//         cout << " " << setw(30) << callHistory.date << endl;
-//     }
-// };
-
-
 int main()
 {
 
@@ -207,11 +162,11 @@ int main()
              return bad;
         }
 
-        application::editContact(tx, parsedInfo.at("name").get<string>(),contId);
+        crow::response res =  application::editContact(tx, parsedInfo.at("name").get<string>(),contId);
 
         tx.commit();
         pool.release(conn);
-        return crow::response("200 OK");
+        return res;
     });
 
     //delete a contact
@@ -220,10 +175,10 @@ int main()
         auto conn = pool.acquire();
         pqxx::work tx(*conn);
 
-        application::deleteContact(tx, contactId);
+        crow::response res = application::deleteContact(tx, contactId);
         tx.commit();
         pool.release(conn);
-        return crow::response("200 OK");
+        return res;
 
     });
 
@@ -233,12 +188,12 @@ int main()
         auto conn = pool.acquire();
         pqxx::work tx(*conn);
 
-        application::deleteCallHistory(tx, callId);
+        crow::response res = application::deleteCallHistory(tx, callId);
 
         tx.commit();
         pool.release(conn);
 
-        return crow::response("200 OK");
+        return res;
 
     });
 

@@ -46,31 +46,21 @@ namespace contactRepository
         return get<0>(Id[0].as<int>());
     }
 
-    inline string editContact(pqxx::work& tx, const string& name, const int id)
+    inline int editContact(pqxx::work& tx, const string& name, const int id)
     {
         pqxx::params params = contactFactory::createEditContactParams(name, id);
         pqxx::result rows = tx.exec("UPDATE contacts SET Name = $1 WHERE ContactID = $2", params);
 
-        if (rows.affected_rows() != 0)
-        {
-            return "200 OK";
-        }
-        else { return "ERROR: ID not in db"; }
+        return rows.affected_rows();
+
     }
 
-    inline string deleteContact(pqxx::work& tx, const int& contactId)
+    inline int deleteContact(pqxx::work& tx, const int& contactId)
     {
         const pqxx::params param = contactFactory::createDeleteContactParams(contactId);
         pqxx::result rows = tx.exec("DELETE FROM contacts WHERE contactID = $1", param);
 
-        if (rows.affected_rows() != 0)
-        {
-            return "200 OK";
-        }
-        else
-        {
-            return "ERROR: Number not in db";
-        }
+        return rows.affected_rows();
     }
 
     inline vector<int> getIdsFromNumbers(pqxx::work& tx, const vector<string>& numbers)
