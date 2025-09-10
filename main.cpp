@@ -27,6 +27,7 @@ bool phoneNumberIsValid(const string& phoneNumber)
 //     tx.commit();
 // }
 
+
 crow::response routeSelectSwitch(connectionPool& pool, const crow::request& req, int selector)
 {
     switch (selector)
@@ -200,6 +201,7 @@ int main()
     unordered_map<string, int> actionSelectMap= {{"getContacts", 0},
 {"getCalls", 1},{"addContact", 2},{"addCall", 3}, {"updateContact", 4}, {"deleteContact", 5},
     {"deleteCall", 6}};
+    
     //initialization
     string poolString{"dbname = contactsDB user = postgres password = postgres \
       hostaddr = 127.0.0.1 port = 5432"};
