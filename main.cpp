@@ -27,180 +27,174 @@ bool phoneNumberIsValid(const string& phoneNumber)
 //     tx.commit();
 // }
 
-
-crow::response routeSelectSwitch(connectionPool& pool, const crow::request& req, int selector)
+crow::response getContacts(connectionPool& pool, const crow::request& req)
 {
-    switch (selector)
-        {
-        default:{break;}
-        case 0:
-            {
-                json contacts;
-                auto conn = pool.acquire();
-                pqxx::work tx(*conn);
-                vector<contact> contactList = application::getContacts(tx);
+    json contacts;
+    auto conn = pool.acquire();
+    pqxx::work tx(*conn);
+    vector<contact> contactList = application::getContacts(tx);
 
-                for (auto& contact : contactList)
-                {
-                    contacts.push_back({
-                        {"id", contact.id}, {"name", contact.name},
-                        {"number", contact.number}, {"address", contact.address}
-                    });
-                }
+    for (auto& contact : contactList)
+    {
+        contacts.push_back({
+            {"id", contact.id}, {"name", contact.name},
+            {"number", contact.number}, {"address", contact.address}
+        });
+    }
 
-                tx.commit();
-                pool.release(conn);
+    tx.commit();
+    pool.release(conn);
 
-                return {contacts.dump()};
-            }
-
-        case 1:
-            {
-                json calls;
-
-                auto conn = pool.acquire();
-                pqxx::work tx(*conn);
-
-                auto callHistories = application::getCallHistory(tx);
-
-                for (auto& call : callHistories)
-                {
-                    calls.push_back({
-                        {"id", call.callId}, {"contactID", call.otherContactId},
-                        {"contactName", call.otherName}, {"time", call.date}
-                    });
-                }
-
-                tx.commit();
-                pool.release(conn);
-
-                return {calls.dump()};
-            }
-
-
-        case 2:
-            {
-                auto conn = pool.acquire();
-                pqxx::work tx(*conn);
-
-                json parsedContact = json::parse(req.body, nullptr, false);
-                if (!parsedContact.contains("name"))
-                {
-                    crow::response bad(400);
-                    bad.add_header("Access-Control-Allow-Origin", "http://localhost:8080");
-                    bad.add_header("Content-Type", "application/json");
-                    bad.write(R"({"error":"Invalid JSON. Expect {\"id\":number}."})");
-                    return bad;
-                }
-                string number = parsedContact.at("number").get<std::string>();
-
-                if (!phoneNumberIsValid(number))
-                {
-                    crow::response bad(400);
-                    bad.add_header("Access-Control-Allow-Origin", "http://localhost:8080");
-                    bad.add_header("Content-Type", "application/json");
-                    bad.write(R"({"error":"not a valid phone number."})");
-                    return bad;
-                }
-                application::addContact(tx, parsedContact.at("name").get<std::string>(),
-                                        number,
-                                        parsedContact.at("address").get<std::string>());
-
-                tx.commit();
-                pool.release(conn);
-
-                json result;
-                result["result"] = "200 OK";
-                crow::response response(result.dump());
-                return response;
-            }
-
-
-        case 3:
-            {
-                auto conn = pool.acquire();
-                pqxx::work tx(*conn);
-
-                json parsedCall = json::parse(req.body, nullptr, false);
-                if (!parsedCall.contains("number"))
-                {
-                    crow::response bad(400);
-                    bad.write(R"({"error":"Invalid JSON. Expect {\"number\":number}."})");
-                    return bad;
-                }
-
-                application::addCallHistory(tx, parsedCall.at("number").get<std::string>(),
-                                            parsedCall.at("isIncoming").get<bool>());
-
-                tx.commit();
-                pool.release(conn);
-
-                json result;
-                result["result"] = "200 OK";
-                crow::response response(result.dump());
-                return response;
-            }
-
-
-        case 4:
-            {
-                auto conn = pool.acquire();
-                pqxx::work tx(*conn);
-
-                json parsedInfo = json::parse(req.body, nullptr, false);
-
-                if (!parsedInfo.contains("name"))
-                {
-                    crow::response bad(400);
-                    bad.write(R"({"error":"Invalid JSON. Expect {\"id\":number}."})");
-                    return bad;
-                }
-
-                crow::response res = application::editContact(tx, parsedInfo.at("name").get<string>(),
-                    parsedInfo.at("contactId").get<int>());
-
-                tx.commit();
-                pool.release(conn);
-                return res;
-            }
-
-        case 5:
-            {
-                auto conn = pool.acquire();
-                pqxx::work tx(*conn);
-
-                json parsedInfo = json::parse(req.body, nullptr, false);
-
-                crow::response res = application::deleteContact(tx, parsedInfo.at("contactId").get<int>());
-                tx.commit();
-                pool.release(conn);
-                return res;
-            }
-
-
-        case 6:
-            {
-                auto conn = pool.acquire();
-                pqxx::work tx(*conn);
-
-                json parsedInfo = json::parse(req.body, nullptr, false);
-
-                crow::response res = application::deleteCallHistory(tx, parsedInfo.at("callId").get<int>());
-
-                tx.commit();
-                pool.release(conn);
-
-                return res;
-            }
-        }
-    return {"ERROR: not a valid action"};
+    return {contacts.dump()};
 }
+
+crow::response getCalls(connectionPool& pool, const crow::request& req)
+{
+    json calls;
+
+    auto conn = pool.acquire();
+    pqxx::work tx(*conn);
+
+    auto callHistories = application::getCallHistory(tx);
+
+    for (auto& call : callHistories)
+    {
+        calls.push_back({
+            {"id", call.callId}, {"contactID", call.otherContactId},
+            {"contactName", call.otherName}, {"time", call.date}
+        });
+    }
+
+    tx.commit();
+    pool.release(conn);
+
+    return {calls.dump()};
+}
+
+crow::response addContact(connectionPool& pool, const crow::request& req)
+{
+    auto conn = pool.acquire();
+    pqxx::work tx(*conn);
+
+    json parsedContact = json::parse(req.body, nullptr, false);
+    if (!parsedContact.contains("name"))
+    {
+        crow::response bad(400);
+        bad.add_header("Access-Control-Allow-Origin", "http://localhost:8080");
+        bad.add_header("Content-Type", "application/json");
+        bad.write(R"({"error":"Invalid JSON. Expect {\"id\":number}."})");
+        return bad;
+    }
+    string number = parsedContact.at("number").get<std::string>();
+
+    if (!phoneNumberIsValid(number))
+    {
+        crow::response bad(400);
+        bad.add_header("Access-Control-Allow-Origin", "http://localhost:8080");
+        bad.add_header("Content-Type", "application/json");
+        bad.write(R"({"error":"not a valid phone number."})");
+        return bad;
+    }
+    application::addContact(tx, parsedContact.at("name").get<std::string>(),
+                            number,
+                            parsedContact.at("address").get<std::string>());
+
+    tx.commit();
+    pool.release(conn);
+
+    json result;
+    result["result"] = "200 OK";
+    crow::response response(result.dump());
+    return response;
+}
+
+crow::response addCall(connectionPool& pool, const crow::request& req)
+{
+    auto conn = pool.acquire();
+    pqxx::work tx(*conn);
+
+    json parsedCall = json::parse(req.body, nullptr, false);
+    if (!parsedCall.contains("number"))
+    {
+        crow::response bad(400);
+        bad.write(R"({"error":"Invalid JSON. Expect {\"number\":number}."})");
+        return bad;
+    }
+
+    application::addCallHistory(tx, parsedCall.at("number").get<std::string>(),
+                                parsedCall.at("isIncoming").get<bool>());
+
+    tx.commit();
+    pool.release(conn);
+
+    json result;
+    result["result"] = "200 OK";
+    crow::response response(result.dump());
+    return response;
+}
+
+crow::response editContact(connectionPool& pool, const crow::request& req)
+{
+    auto conn = pool.acquire();
+    pqxx::work tx(*conn);
+
+    json parsedInfo = json::parse(req.body, nullptr, false);
+
+    if (!parsedInfo.contains("name"))
+    {
+        crow::response bad(400);
+        bad.write(R"({"error":"Invalid JSON. Expect {\"id\":number}."})");
+        return bad;
+    }
+
+    crow::response res = application::editContact(tx, parsedInfo.at("name").get<string>(),
+        parsedInfo.at("contactId").get<int>());
+
+    tx.commit();
+    pool.release(conn);
+    return res;
+}
+
+crow::response deleteContact(connectionPool& pool, const crow::request& req)
+{
+    auto conn = pool.acquire();
+    pqxx::work tx(*conn);
+
+    json parsedInfo = json::parse(req.body, nullptr, false);
+
+    crow::response res = application::deleteContact(tx, parsedInfo.at("contactId").get<int>());
+    tx.commit();
+    pool.release(conn);
+    return res;
+}
+
+crow::response deleteCall(connectionPool& pool, const crow::request& req)
+{
+    auto conn = pool.acquire();
+    pqxx::work tx(*conn);
+
+    json parsedInfo = json::parse(req.body, nullptr, false);
+
+    crow::response res = application::deleteCallHistory(tx, parsedInfo.at("callId").get<int>());
+
+    tx.commit();
+    pool.release(conn);
+
+    return res;
+}
+
+
 
 int main()
 {
-    unordered_map<string, int> actionSelectMap= {{"getContacts", 0},
-{"getCalls", 1},{"addContact", 2},{"addCall", 3}, {"updateContact", 4}, {"deleteContact", 5},
-    {"deleteCall", 6}};
+    unordered_map<string, crow::response(*)(connectionPool& pool, const crow::request& req)> actionToFunction = {
+        {"getContacts", getContacts},
+    {"getCalls", getCalls},
+    {"addContact", addContact},
+    {"addCall", addCall},
+    {"updateContact", editContact},
+    {"deleteContact", deleteContact},
+    {"deleteCall", deleteCall}};
     
     //initialization
     string poolString{"dbname = contactsDB user = postgres password = postgres \
@@ -210,11 +204,10 @@ int main()
 
     crow::SimpleApp app;
 
-    CROW_ROUTE(app, "/").methods("GET"_method, "POST"_method)([&pool, &actionSelectMap](const crow::request& req)
+    CROW_ROUTE(app, "/").methods("GET"_method, "POST"_method)([&pool, &actionToFunction](const crow::request& req)
     {
-        int selector = actionSelectMap.at(req.get_header_value("action"));
 
-        crow::response res =  routeSelectSwitch(pool, req, selector);
+        crow::response res =  actionToFunction.at(req.get_header_value("action"))(pool, req);
 
         return res;
     });
