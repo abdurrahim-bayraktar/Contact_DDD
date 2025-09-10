@@ -3,6 +3,8 @@
 #include "callHistory.hpp"
 #include "callhistory-factory.hpp"
 #include <vector>
+#include "../../application/DTO/request-dto.hpp"
+#include "../../application/DTO/response-dto.hpp"
 
 #include "../contact/contact-factory.hpp"
 
@@ -17,12 +19,15 @@ namespace callHistoryRepository
         return callHistories;
     }
 
-    inline string addCallHistory(pqxx::work& tx, const int& otherContact, bool isIncoming)
+    inline ResponseDTO addCallHistory(pqxx::work& tx, const int& otherContact, bool isIncoming)
     {
         pqxx::params params = callHistoryFactory::createAddCallHistoryParams(otherContact, isIncoming);
-        tx.exec("INSERT INTO calls (otherContact, isIncoming, callee) VALUES ($1, $2, 0)", params);
+        pqxx::result id = tx.exec("INSERT INTO calls (otherContact, isIncoming, callee) VALUES ($1, $2, 0) RETURNING CallID", params);
 
-        return "200 OK";
+        ResponseDTO response;
+        response.code = 200;
+        response.body = "{{'id', " + to_string(id[0][0].as<int>()) + "}}";
+        return response;
     }
 
     inline int deleteCallHistory(pqxx::work& tx, const int& callID)

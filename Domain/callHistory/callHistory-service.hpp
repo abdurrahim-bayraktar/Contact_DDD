@@ -1,10 +1,12 @@
 #ifndef CALLHISTORY_SERVICE_HPP
 #define CALLHISTORY_SERVICE_HPP
-#include "callHistory.hpp"
+#include <crow.h>
+#include <vector>
 #include "callhistory-factory.hpp"
 #include "callHistory-repository.hpp"
-#include <vector>
-#include <crow.h>
+#include "callHistory.hpp"
+#include "../../application/DTO/request-dto.hpp"
+#include "../../application/DTO/response-dto.hpp"
 using namespace std;
 
 namespace  callHistoryService
@@ -15,9 +17,9 @@ namespace  callHistoryService
         return callHistoryRepository::getCallHistoryVector(tx);
     }
 
-    inline string addCallHistory(pqxx::work& tx, int otherId, bool isIncoming)
+    inline ResponseDTO addCallHistory(pqxx::work& tx, CrudRequestDTO& request)
     {
-        return callHistoryRepository::addCallHistory(tx, otherId, isIncoming);
+        return callHistoryRepository::addCallHistory(tx, request.id, request.isIncoming);
     };
 
     inline crow::response deleteCallHistory(pqxx::work& tx, int callId)

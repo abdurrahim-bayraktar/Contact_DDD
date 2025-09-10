@@ -3,6 +3,8 @@
 #include <string>
 #include "./application/application.hpp"
 #include "./infrastructure/connectionPooling.hpp"
+#include "./application/DTO/request-dto.hpp"
+#include "./application/DTO/response-dto.hpp"
 #include <regex>
 #include <nlohmann/json.hpp>
 #include "crow.h"
@@ -95,16 +97,18 @@ crow::response addContact(connectionPool& pool, const crow::request& req)
         bad.write(R"({"error":"not a valid phone number."})");
         return bad;
     }
-    application::addContact(tx, parsedContact.at("name").get<std::string>(),
-                            number,
-                            parsedContact.at("address").get<std::string>());
+
+    CrudRequestDTO requestDTO;
+    requestDTO.name = parsedContact.at("name").get<std::string>();
+    requestDTO.number = number;
+    requestDTO.address = parsedContact.at("address").get<std::string>();
+    ResponseDTO responseDto = application::addContact(tx, requestDTO);
 
     tx.commit();
     pool.release(conn);
 
-    json result;
-    result["result"] = "200 OK";
-    crow::response response(result.dump());
+
+    crow::response response;
     return response;
 }
 
@@ -189,12 +193,12 @@ int main()
 {
     unordered_map<string, crow::response(*)(connectionPool& pool, const crow::request& req)> actionToFunction = {
         {"getContacts", getContacts},
-    {"getCalls", getCalls},
-    {"addContact", addContact},
-    {"addCall", addCall},
-    {"updateContact", editContact},
-    {"deleteContact", deleteContact},
-    {"deleteCall", deleteCall}};
+        {"getCalls", getCalls},
+        {"addContact", addContact},
+        {"addCall", addCall},
+        {"updateContact", editContact},
+        {"deleteContact", deleteContact},
+        {"deleteCall", deleteCall}};
     
     //initialization
     string poolString{"dbname = contactsDB user = postgres password = postgres \

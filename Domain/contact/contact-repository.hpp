@@ -13,13 +13,17 @@ namespace contactRepository
         return objects;
     };
 
-    inline string addContact(pqxx::work& tx, const string& name, const  string& number, const string& address)
+    inline ResponseDTO addContact(pqxx::work& tx, const string& name, const  string& number, const string& address)
     {
         pqxx::params params = contactFactory::createAddContactParam(name, number, address);
-        tx.exec("INSERT INTO contacts (Name, Number, addrress) VALUES($1, $2, $3)", params);
+        pqxx::result result = tx.exec("INSERT INTO contacts (Name, Number, addrress) VALUES($1, $2, $3) RETURNING ContactID", params);
 
+        ResponseDTO response;
+        response.code = 200;
+        response.body = "{{'id', " + to_string(result[0][0].as<int>()) + "}}";
 
-        return "200 OK";
+        return response;
+
     }
 
     inline string getNameById(pqxx::work& tx, const int id)

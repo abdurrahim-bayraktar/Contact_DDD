@@ -3,6 +3,8 @@
 
 #include "../Domain/callHistory/callHistory-service.hpp"
 #include "../Domain/contact/contact-service.hpp"
+#include "./DTO/request-dto.hpp"
+#include "./DTO/response-dto.hpp"
 #include <nlohmann/json.hpp>
 #include "crow.h"
 using namespace std;
@@ -51,20 +53,27 @@ namespace application
 
     }
 
-    static void addContact(pqxx::work& tx, const string& name, const string& number, const string& address)
+    static ResponseDTO addContact(pqxx::work& tx, CrudRequestDTO dto)
     {
-        cout << contactService::addContact(tx, name, number, address) << endl;
+        return contactService::addContact(tx, dto);
     };
 
-    static void addCallHistory(pqxx::work& tx, const string& otherContactNumber, bool isIncoming)
+    static crow::response addCallHistory(pqxx::work& tx, const string& otherContactNumber, bool isIncoming)
     {
-
-
-
         int otherId = contactService::getIdByNumber(tx, otherContactNumber);
+        CrudRequestDTO request;
+        request.number = otherContactNumber;
+        request.isIncoming = isIncoming;
+        request.id = otherId;
 
-        string status = callHistoryService::addCallHistory(tx, otherId, isIncoming);
-        cout << status << endl;
+
+
+        ResponseDTO response = callHistoryService::addCallHistory(tx,request);
+        crow::response resp;
+        resp.body = response.body;
+        resp.code = response.code;
+        return resp;
+
     };
 
     static crow::response deleteContact(pqxx::work& tx, const int& contactId)

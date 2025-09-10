@@ -21,9 +21,9 @@ namespace contactService
         return contactRepository::getAllRows(tx);
     };
 
-    inline string addContact(pqxx::work& tx, const string& name, const string& number, const string& address)
+    inline ResponseDTO addContact(pqxx::work& tx, CrudRequestDTO dto)
     {
-        return contactRepository::addContact(tx, name, number, address);
+        return contactRepository::addContact(tx, dto.name, dto.number, dto.address);
     };
 
     inline string getNameById(pqxx::work& tx, const int id)
