@@ -30,9 +30,9 @@ namespace callHistoryRepository
         return response;
     }
 
-    inline int deleteCallHistory(pqxx::work& tx, const int& callID)
+    inline int deleteCallHistory(pqxx::work& tx, const RequestDeleteCall& requestDTO)
     {
-        const pqxx::params params = callHistoryFactory::createDeleteCallHistoryParams(callID);
+        const pqxx::params params{requestDTO.callId};
 
         pqxx::result result = tx.exec("DELETE FROM calls WHERE CallID = $1", params);
 

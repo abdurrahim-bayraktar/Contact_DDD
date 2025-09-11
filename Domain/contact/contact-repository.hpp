@@ -69,10 +69,8 @@ namespace contactRepository
         return rows.affected_rows();
     }
 
-    inline vector<int> getIdsFromNumbers(pqxx::work& tx, const vector<string>& numbers)
+    inline vector<int> getIdsFromNumbers(pqxx::work& tx, const vector<string>& numbers, const pqxx::params& params)
     {
-        //TODO: service must pass this params
-        const pqxx::params params = contactFactory::createGetIdsByNumbersParams(numbers);
 
         string queryString = "SELECT DISTINCT ON (Number) Number, ContactID FROM contacts WHERE Number = ANY (ARRAY[";
 
@@ -97,11 +95,8 @@ namespace contactRepository
         return idVector;
     }
 
-    inline int getNamesByIds(pqxx::work& tx, unordered_map<int, string>& names)
+    inline int getNamesByIds(pqxx::work& tx, unordered_map<int, string>& names, const pqxx::params& params)
     {
-        //TODO: service must pass this params
-        const pqxx::params params = contactFactory::createGetNamesBydIdsParam(names);
-
         string queryString = "SELECT Name, ContactID FROM contacts WHERE ContactID = ANY (ARRAY[";
 
         for (unsigned int i = 0; i < params.size(); i++)

@@ -42,7 +42,8 @@ namespace contactService
 
     inline vector<int> getIdsByNumbers(pqxx::work& tx, const vector<string>& numbers)
     {
-        vector<int> idVector = contactRepository::getIdsFromNumbers(tx, numbers);
+        const pqxx::params params = contactFactory::createGetIdsByNumbersParams(numbers);
+        vector<int> idVector = contactRepository::getIdsFromNumbers(tx, numbers, params);
 
         if (idVector.empty())
         {
@@ -73,7 +74,7 @@ namespace contactService
     inline crow::response deleteContact(pqxx::work& tx, const RequestDeleteContact& requestDTO)
     {
         crow::response res;
-        if (contactRepository::deleteContact(tx, requestDTO.contactId) == 0 )
+        if (contactRepository::deleteContact(tx, requestDTO) == 0 )
         {
             res.code = 404;
             res.body =  "ERROR: id is not in db";
@@ -90,7 +91,8 @@ namespace contactService
     //deprecated
     [[maybe_unused]] inline void getNamesByIds(pqxx::work& tx, unordered_map<int, string>& names)
     {
-        contactRepository::getNamesByIds(tx, names);
+        const pqxx::params params = contactFactory::createGetNamesBydIdsParam(names);
+        contactRepository::getNamesByIds(tx, names, params);
         if (names.empty())
         {
             cout << "ERROR: NO NAME BY IDS";

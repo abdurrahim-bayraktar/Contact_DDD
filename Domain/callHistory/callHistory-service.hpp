@@ -25,7 +25,7 @@ namespace  callHistoryService
     inline crow::response deleteCallHistory(pqxx::work& tx, const RequestDeleteCall& requestDTO)
     {
         crow::response res;
-        if (callHistoryRepository::deleteCallHistory(tx, requestDTO.callId) == 0)
+        if (callHistoryRepository::deleteCallHistory(tx, requestDTO) == 0)
         {
             res.code = 404;
             res.body =  "ERROR: id is not in db";
