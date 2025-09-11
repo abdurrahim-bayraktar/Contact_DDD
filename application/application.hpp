@@ -13,7 +13,7 @@ namespace application
 {
 
 
-    static vector<contact> getContacts(pqxx::work& tx)
+    static ResponseGetContacts getContacts(pqxx::work& tx)
     {
         return contactService::getAllContact(tx);
     };
@@ -40,57 +40,52 @@ namespace application
     //     return histories;
     // };
 
-    inline vector<callHistory> getCallHistory(pqxx::work& tx)
+    inline ResponseGetCallHistory getCallHistory(pqxx::work& tx)
     {
-        vector<callHistory>histories = callHistoryService::getAllCallHistories(tx);
+        ResponseGetCallHistory responseDTO = callHistoryService::getAllCallHistories(tx);
 
-        for (int i = 0; callHistory& call : histories)
+        for (int i = 0; callHistory& call : responseDTO.callHistories)
         {
             call.otherName = contactService::getNameById(tx, call.otherContactId);
             ++i;
         }
-    return histories;
+    return responseDTO;
 
     }
 
-    static ResponseDTO addContact(pqxx::work& tx, CrudRequestDTO dto)
+    static ResponseDTO addContact(pqxx::work& tx, RequestAddContact& dto)
     {
         return contactService::addContact(tx, dto);
     };
 
-    static crow::response addCallHistory(pqxx::work& tx, const string& otherContactNumber, bool isIncoming)
+    static ResponseDTO addCallHistory(pqxx::work& tx, RequestAddCall& requestDTO)
     {
-        int otherId = contactService::getIdByNumber(tx, otherContactNumber);
-        CrudRequestDTO request;
-        request.number = otherContactNumber;
-        request.isIncoming = isIncoming;
-        request.id = otherId;
+        int otherId = contactService::getIdByNumber(tx, requestDTO.number);
+
+        requestDTO.id = otherId;
 
 
 
-        ResponseDTO response = callHistoryService::addCallHistory(tx,request);
-        crow::response resp;
-        resp.body = response.body;
-        resp.code = response.code;
-        return resp;
+        ResponseDTO response = callHistoryService::addCallHistory(tx,requestDTO);
+        return response;
 
     };
 
-    static crow::response deleteContact(pqxx::work& tx, const int& contactId)
+    static crow::response deleteContact(pqxx::work& tx, const RequestDeleteContact& requestDTO)
     {
 
-        callHistoryRepository::deleteCallHistoriesWithContactId(tx, contactId);
-        return contactService::deleteContact(tx, contactId);
+        callHistoryRepository::deleteCallHistoriesWithContactId(tx, requestDTO);
+        return contactService::deleteContact(tx, requestDTO);
     };
 
-    inline crow::response deleteCallHistory(pqxx::work& tx, const int& callId)
+    inline crow::response deleteCallHistory(pqxx::work& tx, const RequestDeleteCall& requestDTO)
     {
-        return callHistoryService::deleteCallHistory(tx, callId);
+        return callHistoryService::deleteCallHistory(tx, requestDTO);
     };
 
-    static crow::response editContact(pqxx::work& tx, const string& newName, const int& contactId)
+    static ResponseDTO editContact(pqxx::work& tx, const RequestEditContact& requestDTO)
     {
-        return contactService::editContact(tx, newName, contactId);
+        return contactService::editContact(tx, requestDTO);
     };
 
 

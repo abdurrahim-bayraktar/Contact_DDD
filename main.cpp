@@ -34,9 +34,10 @@ crow::response getContacts(connectionPool& pool, const crow::request& req)
     json contacts;
     auto conn = pool.acquire();
     pqxx::work tx(*conn);
-    vector<contact> contactList = application::getContacts(tx);
 
-    for (auto& contact : contactList)
+    ResponseGetContacts responseDTO = application::getContacts(tx);
+
+    for (auto& contact : responseDTO.contacts)
     {
         contacts.push_back({
             {"id", contact.id}, {"name", contact.name},
@@ -57,9 +58,9 @@ crow::response getCalls(connectionPool& pool, const crow::request& req)
     auto conn = pool.acquire();
     pqxx::work tx(*conn);
 
-    auto callHistories = application::getCallHistory(tx);
+    ResponseGetCallHistory responseDTO = application::getCallHistory(tx);
 
-    for (auto& call : callHistories)
+    for (auto& call : responseDTO.callHistories)
     {
         calls.push_back({
             {"id", call.callId}, {"contactID", call.otherContactId},
@@ -98,10 +99,8 @@ crow::response addContact(connectionPool& pool, const crow::request& req)
         return bad;
     }
 
-    CrudRequestDTO requestDTO;
-    requestDTO.name = parsedContact.at("name").get<std::string>();
-    requestDTO.number = number;
-    requestDTO.address = parsedContact.at("address").get<std::string>();
+    RequestAddContact requestDTO(parsedContact.at("name").get<std::string>(), number, parsedContact.at("address").get<std::string>());
+
     ResponseDTO responseDto = application::addContact(tx, requestDTO);
 
     tx.commit();
@@ -125,15 +124,15 @@ crow::response addCall(connectionPool& pool, const crow::request& req)
         return bad;
     }
 
-    application::addCallHistory(tx, parsedCall.at("number").get<std::string>(),
-                                parsedCall.at("isIncoming").get<bool>());
+    RequestAddCall requestDTO(parsedCall.at("number").get<std::string>(), parsedCall.at("isIncoming").get<bool>());
+    ResponseDTO responseDTO = application::addCallHistory(tx, requestDTO);
 
     tx.commit();
     pool.release(conn);
 
-    json result;
-    result["result"] = "200 OK";
-    crow::response response(result.dump());
+    crow::response response;
+    response.code = responseDTO.code;
+    response.body = responseDTO.body;
     return response;
 }
 
@@ -151,12 +150,17 @@ crow::response editContact(connectionPool& pool, const crow::request& req)
         return bad;
     }
 
-    crow::response res = application::editContact(tx, parsedInfo.at("name").get<string>(),
-        parsedInfo.at("contactId").get<int>());
+    RequestEditContact requestDTO(parsedInfo.at("name").get<string>(), parsedInfo.at("contactId").get<int>());
+
+    ResponseDTO responseDTO = application::editContact(tx, requestDTO);
+
+    crow::response response;
+    response.code = responseDTO.code;
+    response.body = responseDTO.body;
 
     tx.commit();
     pool.release(conn);
-    return res;
+    return response;
 }
 
 crow::response deleteContact(connectionPool& pool, const crow::request& req)
@@ -166,7 +170,10 @@ crow::response deleteContact(connectionPool& pool, const crow::request& req)
 
     json parsedInfo = json::parse(req.body, nullptr, false);
 
-    crow::response res = application::deleteContact(tx, parsedInfo.at("contactId").get<int>());
+    RequestDeleteContact requestDTO(parsedInfo.at("contactId").get<int>());
+
+
+    crow::response res = application::deleteContact(tx, requestDTO);
     tx.commit();
     pool.release(conn);
     return res;
@@ -178,8 +185,8 @@ crow::response deleteCall(connectionPool& pool, const crow::request& req)
     pqxx::work tx(*conn);
 
     json parsedInfo = json::parse(req.body, nullptr, false);
-
-    crow::response res = application::deleteCallHistory(tx, parsedInfo.at("callId").get<int>());
+    RequestDeleteCall requestDTO(parsedInfo.at("callId").get<int>());
+    crow::response res = application::deleteCallHistory(tx, requestDTO);
 
     tx.commit();
     pool.release(conn);

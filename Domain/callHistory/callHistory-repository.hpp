@@ -12,11 +12,11 @@ using namespace std;
 
 namespace callHistoryRepository
 {
-    inline vector<callHistory> getCallHistoryVector(pqxx::work& tx)
+    inline ResponseGetCallHistory getCallHistoryVector(pqxx::work& tx)
     {
         const pqxx::result rows = tx.exec("SELECT callid, othercontact, time, isincoming FROM calls");
-        vector<callHistory> callHistories = callHistoryFactory::createCallHistoryVector(rows);
-        return callHistories;
+        ResponseGetCallHistory responseDTO(callHistoryFactory::createCallHistoryVector(rows));
+        return responseDTO;
     }
 
     inline ResponseDTO addCallHistory(pqxx::work& tx, const int& otherContact, bool isIncoming)
@@ -40,9 +40,9 @@ namespace callHistoryRepository
 
     }
 
-    inline void deleteCallHistoriesWithContactId(pqxx::work& tx, const int& contactId)
+    inline void deleteCallHistoriesWithContactId(pqxx::work& tx, const RequestDeleteContact& requestDTO)
     {
-        pqxx::params params = callHistoryFactory::createDeleteCallHistoryParams(contactId);
+        pqxx::params params = callHistoryFactory::createDeleteCallHistoryParams(requestDTO.contactId);
         tx.exec("DELETE FROM calls WHERE othercontact = $1", params);
     }
 };

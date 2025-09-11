@@ -6,6 +6,8 @@
 #include "contact-repository.hpp"
 #include <vector>
 #include <crow.h>
+#include "../../application/DTO/request-dto.hpp"
+#include "../../application/DTO/response-dto.hpp"
 
 using namespace std;
 
@@ -15,13 +17,13 @@ namespace contactService
 
 
 
-    inline vector<contact> getAllContact(pqxx::work& tx)
+    inline ResponseGetContacts getAllContact(pqxx::work& tx)
     {
 
         return contactRepository::getAllRows(tx);
     };
 
-    inline ResponseDTO addContact(pqxx::work& tx, CrudRequestDTO dto)
+    inline ResponseDTO addContact(pqxx::work& tx, RequestAddContact& dto)
     {
         return contactRepository::addContact(tx, dto.name, dto.number, dto.address);
     };
@@ -49,10 +51,10 @@ namespace contactService
 
     }
 
-    inline crow::response editContact(pqxx::work& tx, const string& name, const int id)
+    inline ResponseDTO editContact(pqxx::work& tx, const RequestEditContact& requestDTO)
     {
-        crow::response res;
-        if (contactRepository::editContact(tx, name, id) == 0)
+        ResponseDTO res;
+        if (contactRepository::editContact(tx, requestDTO) == 0)
         {
             res.code = 404;
             res.body =  "ERROR: id is not in db";
@@ -66,10 +68,10 @@ namespace contactService
         }
     }
 
-    inline crow::response deleteContact(pqxx::work& tx, const int& number)
+    inline crow::response deleteContact(pqxx::work& tx, const RequestDeleteContact& requestDTO)
     {
         crow::response res;
-        if (contactRepository::deleteContact(tx, number) == 0 )
+        if (contactRepository::deleteContact(tx, requestDTO.contactId) == 0 )
         {
             res.code = 404;
             res.body =  "ERROR: id is not in db";

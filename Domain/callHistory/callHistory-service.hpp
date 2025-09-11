@@ -12,20 +12,20 @@ using namespace std;
 namespace  callHistoryService
 {
 
-    inline vector<callHistory> getAllCallHistories(pqxx::work& tx)
+    inline ResponseGetCallHistory getAllCallHistories(pqxx::work& tx)
     {
         return callHistoryRepository::getCallHistoryVector(tx);
     }
 
-    inline ResponseDTO addCallHistory(pqxx::work& tx, CrudRequestDTO& request)
+    inline ResponseDTO addCallHistory(pqxx::work& tx, const RequestAddCall& request)
     {
         return callHistoryRepository::addCallHistory(tx, request.id, request.isIncoming);
     };
 
-    inline crow::response deleteCallHistory(pqxx::work& tx, int callId)
+    inline crow::response deleteCallHistory(pqxx::work& tx, const RequestDeleteCall& requestDTO)
     {
         crow::response res;
-        if (callHistoryRepository::deleteCallHistory(tx, callId) == 0)
+        if (callHistoryRepository::deleteCallHistory(tx, requestDTO.callId) == 0)
         {
             res.code = 404;
             res.body =  "ERROR: id is not in db";

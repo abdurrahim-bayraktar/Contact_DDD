@@ -5,6 +5,9 @@
 #ifndef CONTACT_DDD_RESPONSE_DTO_HPP
 #define CONTACT_DDD_RESPONSE_DTO_HPP
 #include <string>
+#include <vector>
+#include "../../Domain/callHistory/callHistory.hpp"
+#include "../../Domain/contact/contact.hpp"
 using namespace std;
 
 
@@ -15,14 +18,18 @@ public:
     string body;
 };
 
-class ContactResponseDTO
+struct ResponseGetContacts
 {
-
-public:
-    int id;
-    string name;
-    string number;
-    string address;
-
+    explicit ResponseGetContacts(const vector<contact> &contacts): contacts(contacts) {}
+    int code;
+    vector<contact> contacts;
 };
+
+struct ResponseGetCallHistory
+{
+    explicit ResponseGetCallHistory(const vector<callHistory> &callHistory): callHistories(callHistory) {}
+    int code;
+    vector<callHistory> callHistories;
+};
+
 #endif //CONTACT_DDD_RESPONSE_DTO_HPP
