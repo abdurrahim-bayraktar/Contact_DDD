@@ -25,7 +25,8 @@ namespace contactService
 
     inline ResponseDTO addContact(pqxx::work& tx, RequestAddContact& dto)
     {
-        return contactRepository::addContact(tx, dto.name, dto.number, dto.address);
+        pqxx::params params = contactFactory::createAddContactParam(dto);
+        return contactRepository::addContact(tx, params);
     };
 
     inline string getNameById(pqxx::work& tx, const int id)

@@ -1,6 +1,8 @@
 #ifndef CONTACT_FACTORY_HPP
 #define CONTACT_FACTORY_HPP
 #include "contact.hpp"
+#include "../../application/DTO/request-dto.hpp"
+#include "../../application/DTO/response-dto.hpp"
 
 namespace contactFactory
 {
@@ -25,9 +27,9 @@ namespace contactFactory
 
     }
 
-    inline pqxx::params createAddContactParam(const string& name, const string& number, const string& address)
+    inline pqxx::params createAddContactParam(const RequestAddContact& dto)
     {
-        pqxx::params params{name,number, address};
+        pqxx::params params{dto.name,dto.number, dto.address};
         return params;
     }
 

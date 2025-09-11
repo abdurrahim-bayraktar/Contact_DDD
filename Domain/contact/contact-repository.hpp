@@ -15,12 +15,9 @@ namespace contactRepository
         return responseDTO;
     };
 
-    inline ResponseDTO addContact(pqxx::work& tx, const string& name, const  string& number, const string& address)
+    inline ResponseDTO addContact(pqxx::work& tx, const pqxx::params& params)
     {
-        //TODO: service must pass this params and should have got dto
-        pqxx::params params = contactFactory::createAddContactParam(name, number, address);
-        pqxx::result result = tx.exec("INSERT INTO contacts (Name, Number, addrress) VALUES($1, $2, $3) RETURNING ContactID", params);
-
+                 pqxx::result result = tx.exec("INSERT INTO contacts (Name, Number, addrress) VALUES($1, $2, $3) RETURNING ContactID", params);
         ResponseDTO response;
         response.code = 200;
         response.body = "{{'id', " + to_string(result[0][0].as<int>()) + "}}";
