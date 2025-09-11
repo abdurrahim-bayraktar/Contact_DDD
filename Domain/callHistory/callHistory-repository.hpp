@@ -12,14 +12,14 @@ using namespace std;
 
 namespace callHistoryRepository
 {
-    inline ResponseGetCallHistory getCallHistoryVector(pqxx::work& tx)
+    inline ResponseGetCallHistory getCallHistoryVector(pqxx::nontransaction& tx)
     {
         const pqxx::result rows = tx.exec("SELECT callid, othercontact, time, isincoming FROM calls");
         ResponseGetCallHistory responseDTO(callHistoryFactory::createCallHistoryVector(rows));
         return responseDTO;
     }
 
-    inline ResponseDTO addCallHistory(pqxx::work& tx, const RequestAddCall& requestDTO, const pqxx::params& params)
+    inline ResponseDTO addCallHistory(pqxx::nontransaction& tx, const RequestAddCall& requestDTO, const pqxx::params& params)
     {
 
         const pqxx::result id = tx.exec("INSERT INTO calls (otherContact, isIncoming, callee) VALUES ($1, $2, 0) RETURNING CallID", params);
@@ -30,7 +30,7 @@ namespace callHistoryRepository
         return response;
     }
 
-    inline int deleteCallHistory(pqxx::work& tx, const RequestDeleteCall& requestDTO)
+    inline int deleteCallHistory(pqxx::nontransaction& tx, const RequestDeleteCall& requestDTO)
     {
         const pqxx::params params{requestDTO.callId};
 
@@ -40,7 +40,7 @@ namespace callHistoryRepository
 
     }
 
-    inline void deleteCallHistoriesWithContactId(pqxx::work& tx, const RequestDeleteContact& requestDTO)
+    inline void deleteCallHistoriesWithContactId(pqxx::nontransaction& tx, const RequestDeleteContact& requestDTO)
     {
         const pqxx::params params{requestDTO.contactId};
         tx.exec("DELETE FROM calls WHERE othercontact = $1", params);

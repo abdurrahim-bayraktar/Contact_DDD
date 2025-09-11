@@ -7,7 +7,7 @@
 
 namespace contactRepository
 {
-    inline ResponseGetContacts getAllRows(pqxx::work& tx)
+    inline ResponseGetContacts getAllRows(pqxx::nontransaction& tx)
     {
         pqxx::result rows = tx.exec("SELECT * FROM contacts");
         ResponseGetContacts responseDTO(contactFactory::createContactVector(rows));
@@ -15,7 +15,7 @@ namespace contactRepository
         return responseDTO;
     };
 
-    inline ResponseDTO addContact(pqxx::work& tx, const pqxx::params& params)
+    inline ResponseDTO addContact(pqxx::nontransaction& tx, const pqxx::params& params)
     {
         pqxx::result result = tx.exec("INSERT INTO contacts (Name, Number, addrress) VALUES($1, $2, $3) RETURNING ContactID", params);
         ResponseDTO response;
@@ -27,7 +27,7 @@ namespace contactRepository
     }
 
 //deprecated
-    inline string getNameById(pqxx::work& tx, const int id)
+    inline string getNameById(pqxx::nontransaction& tx, const int id)
     {
         pqxx::params param {id};
         pqxx::result name = tx.exec("SELECT Name FROM contacts where ContactID = $1 LIMIT 1", param);
@@ -36,7 +36,7 @@ namespace contactRepository
     }
 
 //deprecated
-    inline int getIdByNumber(pqxx::work& tx, const string& number)
+    inline int getIdByNumber(pqxx::nontransaction& tx, const string& number)
     {
         const pqxx::params param{number};
         const pqxx::result Id = tx.exec("SELECT ContactID FROM contacts WHERE Number = $1", param);
@@ -52,7 +52,7 @@ namespace contactRepository
         return get<0>(Id[0].as<int>());
     }
 
-    inline int editContact(pqxx::work& tx, const RequestEditContact& requestDTO)
+    inline int editContact(pqxx::nontransaction& tx, const RequestEditContact& requestDTO)
     {
         const pqxx::params params = contactFactory::createEditContactParams(requestDTO.name, requestDTO.id);
         const pqxx::result rows = tx.exec("UPDATE contacts SET Name = $1 WHERE ContactID = $2", params);
@@ -61,7 +61,7 @@ namespace contactRepository
 
     }
 
-    inline int deleteContact(pqxx::work& tx, const RequestDeleteContact& requestDTO)
+    inline int deleteContact(pqxx::nontransaction& tx, const RequestDeleteContact& requestDTO)
     {
         const pqxx::params param {requestDTO.contactId};
         pqxx::result rows = tx.exec("DELETE FROM contacts WHERE contactID = $1", param);
@@ -69,7 +69,7 @@ namespace contactRepository
         return rows.affected_rows();
     }
 
-    inline vector<int> getIdsFromNumbers(pqxx::work& tx, const vector<string>& numbers, const pqxx::params& params)
+    inline vector<int> getIdsFromNumbers(pqxx::nontransaction& tx, const vector<string>& numbers, const pqxx::params& params)
     {
 
         string queryString = "SELECT DISTINCT ON (Number) Number, ContactID FROM contacts WHERE Number = ANY (ARRAY[";
@@ -95,7 +95,7 @@ namespace contactRepository
         return idVector;
     }
 
-    inline int getNamesByIds(pqxx::work& tx, unordered_map<int, string>& names, const pqxx::params& params)
+    inline int getNamesByIds(pqxx::nontransaction& tx, unordered_map<int, string>& names, const pqxx::params& params)
     {
         string queryString = "SELECT Name, ContactID FROM contacts WHERE ContactID = ANY (ARRAY[";
 

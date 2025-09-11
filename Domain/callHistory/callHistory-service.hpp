@@ -12,18 +12,18 @@ using namespace std;
 namespace  callHistoryService
 {
 
-    inline ResponseGetCallHistory getAllCallHistories(pqxx::work& tx)
+    inline ResponseGetCallHistory getAllCallHistories(pqxx::nontransaction& tx)
     {
         return callHistoryRepository::getCallHistoryVector(tx);
     }
 
-    inline ResponseDTO addCallHistory(pqxx::work& tx, const RequestAddCall& request)
+    inline ResponseDTO addCallHistory(pqxx::nontransaction& tx, const RequestAddCall& request)
     {
         const pqxx::params params = callHistoryFactory::createAddCallHistoryParams(request);
         return callHistoryRepository::addCallHistory(tx, request, params);
     };
 
-    inline crow::response deleteCallHistory(pqxx::work& tx, const RequestDeleteCall& requestDTO)
+    inline crow::response deleteCallHistory(pqxx::nontransaction& tx, const RequestDeleteCall& requestDTO)
     {
         crow::response res;
         if (callHistoryRepository::deleteCallHistory(tx, requestDTO) == 0)

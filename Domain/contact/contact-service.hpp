@@ -17,30 +17,30 @@ namespace contactService
 
 
 
-    inline ResponseGetContacts getAllContact(pqxx::work& tx)
+    inline ResponseGetContacts getAllContact(pqxx::nontransaction& tx)
     {
 
         return contactRepository::getAllRows(tx);
     };
 
-    inline ResponseDTO addContact(pqxx::work& tx, RequestAddContact& dto)
+    inline ResponseDTO addContact(pqxx::nontransaction& tx, RequestAddContact& dto)
     {
         pqxx::params params = contactFactory::createAddContactParam(dto);
         return contactRepository::addContact(tx, params);
     };
 
 //deprecated
-    inline string getNameById(pqxx::work& tx, const int id)
+    inline string getNameById(pqxx::nontransaction& tx, const int id)
     {
         return contactRepository::getNameById(tx, id);
     }
 //deprecated
-    inline int getIdByNumber(pqxx::work& tx, const string& number)
+    inline int getIdByNumber(pqxx::nontransaction& tx, const string& number)
     {
         return contactRepository::getIdByNumber(tx, number);
     }
 
-    inline vector<int> getIdsByNumbers(pqxx::work& tx, const vector<string>& numbers)
+    inline vector<int> getIdsByNumbers(pqxx::nontransaction& tx, const vector<string>& numbers)
     {
         const pqxx::params params = contactFactory::createGetIdsByNumbersParams(numbers);
         vector<int> idVector = contactRepository::getIdsFromNumbers(tx, numbers, params);
@@ -54,7 +54,7 @@ namespace contactService
 
     }
 
-    inline ResponseDTO editContact(pqxx::work& tx, const RequestEditContact& requestDTO)
+    inline ResponseDTO editContact(pqxx::nontransaction& tx, const RequestEditContact& requestDTO)
     {
         ResponseDTO res;
         if (contactRepository::editContact(tx, requestDTO) == 0)
@@ -71,7 +71,7 @@ namespace contactService
         }
     }
 
-    inline crow::response deleteContact(pqxx::work& tx, const RequestDeleteContact& requestDTO)
+    inline crow::response deleteContact(pqxx::nontransaction& tx, const RequestDeleteContact& requestDTO)
     {
         crow::response res;
         if (contactRepository::deleteContact(tx, requestDTO) == 0 )
@@ -89,7 +89,7 @@ namespace contactService
     }
 
     //deprecated
-    [[maybe_unused]] inline void getNamesByIds(pqxx::work& tx, unordered_map<int, string>& names)
+    [[maybe_unused]] inline void getNamesByIds(pqxx::nontransaction& tx, unordered_map<int, string>& names)
     {
         const pqxx::params params = contactFactory::createGetNamesBydIdsParam(names);
         contactRepository::getNamesByIds(tx, names, params);

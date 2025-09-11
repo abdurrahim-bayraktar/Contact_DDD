@@ -29,11 +29,9 @@ bool phoneNumberIsValid(const string& phoneNumber)
 //     tx.commit();
 // }
 
-crow::response getContacts(connectionPool& pool, const crow::request& req)
+crow::response getContacts(pqxx::nontransaction& tx, const crow::request& req)
 {
     json contacts;
-    auto conn = pool.acquire();
-    pqxx::work tx(*conn);
 
     ResponseGetContacts responseDTO = application::getContacts(tx);
 
@@ -45,18 +43,13 @@ crow::response getContacts(connectionPool& pool, const crow::request& req)
         });
     }
 
-    tx.commit();
-    pool.release(conn);
 
     return {contacts.dump()};
 }
 
-crow::response getCalls(connectionPool& pool, const crow::request& req)
+crow::response getCalls(pqxx::nontransaction& tx, const crow::request& req)
 {
     json calls;
-
-    auto conn = pool.acquire();
-    pqxx::work tx(*conn);
 
     ResponseGetCallHistory responseDTO = application::getCallHistory(tx);
 
@@ -68,23 +61,19 @@ crow::response getCalls(connectionPool& pool, const crow::request& req)
         });
     }
 
-    tx.commit();
-    pool.release(conn);
+
 
     return {calls.dump()};
 }
 
-crow::response addContact(connectionPool& pool, const crow::request& req)
+crow::response addContact(pqxx::nontransaction& tx, const crow::request& req)
 {
-    auto conn = pool.acquire();
-    pqxx::work tx(*conn);
+
 
     json parsedContact = json::parse(req.body, nullptr, false);
     if (!parsedContact.contains("name"))
     {
         crow::response bad(400);
-        bad.add_header("Access-Control-Allow-Origin", "http://localhost:8080");
-        bad.add_header("Content-Type", "application/json");
         bad.write(R"({"error":"Invalid JSON. Expect {\"id\":number}."})");
         return bad;
     }
@@ -93,8 +82,6 @@ crow::response addContact(connectionPool& pool, const crow::request& req)
     if (!phoneNumberIsValid(number))
     {
         crow::response bad(400);
-        bad.add_header("Access-Control-Allow-Origin", "http://localhost:8080");
-        bad.add_header("Content-Type", "application/json");
         bad.write(R"({"error":"not a valid phone number."})");
         return bad;
     }
@@ -103,18 +90,15 @@ crow::response addContact(connectionPool& pool, const crow::request& req)
 
     ResponseDTO responseDto = application::addContact(tx, requestDTO);
 
-    tx.commit();
-    pool.release(conn);
+
 
 
     crow::response response;
     return response;
 }
 
-crow::response addCall(connectionPool& pool, const crow::request& req)
+crow::response addCall(pqxx::nontransaction& tx, const crow::request& req)
 {
-    auto conn = pool.acquire();
-    pqxx::work tx(*conn);
 
     json parsedCall = json::parse(req.body, nullptr, false);
     if (!parsedCall.contains("number"))
@@ -127,8 +111,6 @@ crow::response addCall(connectionPool& pool, const crow::request& req)
     RequestAddCall requestDTO(parsedCall.at("number").get<std::string>(), parsedCall.at("isIncoming").get<bool>());
     ResponseDTO responseDTO = application::addCallHistory(tx, requestDTO);
 
-    tx.commit();
-    pool.release(conn);
 
     crow::response response;
     response.code = responseDTO.code;
@@ -136,10 +118,8 @@ crow::response addCall(connectionPool& pool, const crow::request& req)
     return response;
 }
 
-crow::response editContact(connectionPool& pool, const crow::request& req)
+crow::response editContact(pqxx::nontransaction& tx, const crow::request& req)
 {
-    auto conn = pool.acquire();
-    pqxx::work tx(*conn);
 
     json parsedInfo = json::parse(req.body, nullptr, false);
 
@@ -158,38 +138,28 @@ crow::response editContact(connectionPool& pool, const crow::request& req)
     response.code = responseDTO.code;
     response.body = responseDTO.body;
 
-    tx.commit();
-    pool.release(conn);
+
     return response;
 }
 
-crow::response deleteContact(connectionPool& pool, const crow::request& req)
+crow::response deleteContact(pqxx::nontransaction& tx, const crow::request& req)
 {
-    auto conn = pool.acquire();
-    pqxx::work tx(*conn);
-
     json parsedInfo = json::parse(req.body, nullptr, false);
 
     RequestDeleteContact requestDTO(parsedInfo.at("contactId").get<int>());
 
-
     crow::response res = application::deleteContact(tx, requestDTO);
-    tx.commit();
-    pool.release(conn);
-    return res;
+
 }
 
-crow::response deleteCall(connectionPool& pool, const crow::request& req)
+crow::response deleteCall(pqxx::nontransaction& tx, const crow::request& req)
 {
-    auto conn = pool.acquire();
-    pqxx::work tx(*conn);
 
     json parsedInfo = json::parse(req.body, nullptr, false);
     RequestDeleteCall requestDTO(parsedInfo.at("callId").get<int>());
     crow::response res = application::deleteCallHistory(tx, requestDTO);
 
-    tx.commit();
-    pool.release(conn);
+
 
     return res;
 }
@@ -198,7 +168,7 @@ crow::response deleteCall(connectionPool& pool, const crow::request& req)
 
 int main()
 {
-    unordered_map<string, crow::response(*)(connectionPool& pool, const crow::request& req)> actionToFunction = {
+    unordered_map<string, crow::response(*)(pqxx::nontransaction& tx, const crow::request& req)> actionToFunction = {
         {"getContacts", getContacts},
         {"getCalls", getCalls},
         {"addContact", addContact},
@@ -218,7 +188,9 @@ int main()
     CROW_ROUTE(app, "/").methods("GET"_method, "POST"_method)([&pool, &actionToFunction](const crow::request& req)
     {
 
-        crow::response res =  actionToFunction.at(req.get_header_value("action"))(pool, req);
+        auto conn = pool.acquire();
+        const pqxx::nontransaction tx(*conn);
+        crow::response res =  actionToFunction.at(req.get_header_value("action"))(tx, req);
 
         return res;
     });

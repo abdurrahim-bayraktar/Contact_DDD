@@ -13,7 +13,7 @@ namespace application
 {
 
 
-    static ResponseGetContacts getContacts(pqxx::work& tx)
+    static ResponseGetContacts getContacts(pqxx::nontransaction& tx)
     {
         return contactService::getAllContact(tx);
     };
@@ -40,7 +40,7 @@ namespace application
     //     return histories;
     // };
 
-    inline ResponseGetCallHistory getCallHistory(pqxx::work& tx)
+    inline ResponseGetCallHistory getCallHistory(pqxx::nontransaction& tx)
     {
         ResponseGetCallHistory responseDTO = callHistoryService::getAllCallHistories(tx);
 
@@ -53,12 +53,12 @@ namespace application
 
     }
 
-    static ResponseDTO addContact(pqxx::work& tx, RequestAddContact& dto)
+    static ResponseDTO addContact(pqxx::nontransaction& tx, RequestAddContact& dto)
     {
         return contactService::addContact(tx, dto);
     };
 
-    static ResponseDTO addCallHistory(pqxx::work& tx, RequestAddCall& requestDTO)
+    static ResponseDTO addCallHistory(pqxx::nontransaction& tx, RequestAddCall& requestDTO)
     {
         int otherId = contactService::getIdByNumber(tx, requestDTO.number);
 
@@ -71,19 +71,19 @@ namespace application
 
     };
 
-    static crow::response deleteContact(pqxx::work& tx, const RequestDeleteContact& requestDTO)
+    static crow::response deleteContact(pqxx::nontransaction& tx, const RequestDeleteContact& requestDTO)
     {
 
         callHistoryRepository::deleteCallHistoriesWithContactId(tx, requestDTO);
         return contactService::deleteContact(tx, requestDTO);
     };
 
-    inline crow::response deleteCallHistory(pqxx::work& tx, const RequestDeleteCall& requestDTO)
+    inline crow::response deleteCallHistory(pqxx::nontransaction& tx, const RequestDeleteCall& requestDTO)
     {
         return callHistoryService::deleteCallHistory(tx, requestDTO);
     };
 
-    static ResponseDTO editContact(pqxx::work& tx, const RequestEditContact& requestDTO)
+    static ResponseDTO editContact(pqxx::nontransaction& tx, const RequestEditContact& requestDTO)
     {
         return contactService::editContact(tx, requestDTO);
     };
