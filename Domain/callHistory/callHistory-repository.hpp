@@ -26,7 +26,7 @@ namespace callHistoryRepository
 
         ResponseDTO response;
         response.code = 200;
-        response.body = "{{'id', " + to_string(id[0][0].as<int>()) + "}}";
+        response.body = "{{'id': " + to_string(id[0][0].as<int>()) + "}}";
         return response;
     }
 

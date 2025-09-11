@@ -20,7 +20,7 @@ namespace contactRepository
         pqxx::result result = tx.exec("INSERT INTO contacts (Name, Number, addrress) VALUES($1, $2, $3) RETURNING ContactID", params);
         ResponseDTO response;
         response.code = 200;
-        response.body = "{{'id', " + to_string(result[0][0].as<int>()) + "}}";
+        response.body = "{{'id': " + to_string(result[0][0].as<int>()) + "}}";
 
         return response;
 
