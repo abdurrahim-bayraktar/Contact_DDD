@@ -17,7 +17,7 @@ namespace contactRepository
 
     inline ResponseDTO addContact(pqxx::work& tx, const pqxx::params& params)
     {
-                 pqxx::result result = tx.exec("INSERT INTO contacts (Name, Number, addrress) VALUES($1, $2, $3) RETURNING ContactID", params);
+        pqxx::result result = tx.exec("INSERT INTO contacts (Name, Number, addrress) VALUES($1, $2, $3) RETURNING ContactID", params);
         ResponseDTO response;
         response.code = 200;
         response.body = "{{'id', " + to_string(result[0][0].as<int>()) + "}}";
@@ -26,18 +26,18 @@ namespace contactRepository
 
     }
 
+//deprecated
     inline string getNameById(pqxx::work& tx, const int id)
     {
-        //TODO: should have received dto
         pqxx::params param {id};
         pqxx::result name = tx.exec("SELECT Name FROM contacts where ContactID = $1 LIMIT 1", param);
 
         return get<0>(name[0].as<string>());
     }
 
+//deprecated
     inline int getIdByNumber(pqxx::work& tx, const string& number)
     {
-        //TODO: should have received dto
         const pqxx::params param{number};
         const pqxx::result Id = tx.exec("SELECT ContactID FROM contacts WHERE Number = $1", param);
 
@@ -61,10 +61,9 @@ namespace contactRepository
 
     }
 
-    inline int deleteContact(pqxx::work& tx, const int& contactId)
+    inline int deleteContact(pqxx::work& tx, const RequestDeleteContact& requestDTO)
     {
-        //TODO: should have received dto
-        const pqxx::params param {contactId};
+        const pqxx::params param {requestDTO.contactId};
         pqxx::result rows = tx.exec("DELETE FROM contacts WHERE contactID = $1", param);
 
         return rows.affected_rows();

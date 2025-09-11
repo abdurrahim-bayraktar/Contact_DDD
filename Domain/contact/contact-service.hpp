@@ -29,11 +29,12 @@ namespace contactService
         return contactRepository::addContact(tx, params);
     };
 
+//deprecated
     inline string getNameById(pqxx::work& tx, const int id)
     {
         return contactRepository::getNameById(tx, id);
     }
-
+//deprecated
     inline int getIdByNumber(pqxx::work& tx, const string& number)
     {
         return contactRepository::getIdByNumber(tx, number);
