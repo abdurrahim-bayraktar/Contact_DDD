@@ -19,10 +19,10 @@ namespace callHistoryRepository
         return responseDTO;
     }
 
-    inline ResponseDTO addCallHistory(pqxx::work& tx, const int& otherContact, bool isIncoming)
+    inline ResponseDTO addCallHistory(pqxx::work& tx, const RequestAddCall& requestDTO, const pqxx::params& params)
     {
-        pqxx::params params = callHistoryFactory::createAddCallHistoryParams(otherContact, isIncoming);
-        pqxx::result id = tx.exec("INSERT INTO calls (otherContact, isIncoming, callee) VALUES ($1, $2, 0) RETURNING CallID", params);
+
+        const pqxx::result id = tx.exec("INSERT INTO calls (otherContact, isIncoming, callee) VALUES ($1, $2, 0) RETURNING CallID", params);
 
         ResponseDTO response;
         response.code = 200;
@@ -34,7 +34,7 @@ namespace callHistoryRepository
     {
         const pqxx::params params{requestDTO.callId};
 
-        pqxx::result result = tx.exec("DELETE FROM calls WHERE CallID = $1", params);
+        const pqxx::result result = tx.exec("DELETE FROM calls WHERE CallID = $1", params);
 
         return result.affected_rows();
 
@@ -42,7 +42,7 @@ namespace callHistoryRepository
 
     inline void deleteCallHistoriesWithContactId(pqxx::work& tx, const RequestDeleteContact& requestDTO)
     {
-        pqxx::params params = callHistoryFactory::createDeleteCallHistoryParams(requestDTO.contactId);
+        const pqxx::params params{requestDTO.contactId};
         tx.exec("DELETE FROM calls WHERE othercontact = $1", params);
     }
 };

@@ -19,7 +19,8 @@ namespace  callHistoryService
 
     inline ResponseDTO addCallHistory(pqxx::work& tx, const RequestAddCall& request)
     {
-        return callHistoryRepository::addCallHistory(tx, request.id, request.isIncoming);
+        const pqxx::params params = callHistoryFactory::createAddCallHistoryParams(request);
+        return callHistoryRepository::addCallHistory(tx, request, params);
     };
 
     inline crow::response deleteCallHistory(pqxx::work& tx, const RequestDeleteCall& requestDTO)

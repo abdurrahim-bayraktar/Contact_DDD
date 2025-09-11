@@ -1,6 +1,8 @@
 #ifndef CALLHISTORY_FACTORY_HPP
 #define CALLHISTORY_FACTORY_HPP
 #include "callHistory.hpp"
+#include "../../application/DTO/request-dto.hpp"
+#include "../../application/DTO/response-dto.hpp"
 
 using namespace std;
 
@@ -23,9 +25,9 @@ namespace callHistoryFactory
         return callHistories;
     }
 
-    inline pqxx::params createAddCallHistoryParams(const int& otherContact, bool isIncoming)
+    inline pqxx::params createAddCallHistoryParams(const RequestAddCall& requestDTO)
     {
-        pqxx::params params{otherContact, isIncoming};
+        pqxx::params params{requestDTO.id, requestDTO.isIncoming};
         return params;
     }
 
