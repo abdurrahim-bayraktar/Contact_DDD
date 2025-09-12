@@ -16,7 +16,7 @@ namespace responseDTO
     {
     public:
         int code;
-        string body;
+        nlohmann::json body;
         NLOHMANN_DEFINE_TYPE_INTRUSIVE(ResponseDTO, code, body)
     };
 }
@@ -40,7 +40,7 @@ namespace responseDTO
     struct BadResponse
     {
         int code;
-        string body;
+        nlohmann::json body;
         BadResponse()
         {
             code = 400;

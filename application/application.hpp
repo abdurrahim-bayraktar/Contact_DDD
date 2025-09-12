@@ -57,6 +57,7 @@ namespace application
     static json addContact(pqxx::nontransaction& tx, json& parsedRequest)
     {
         responseDTO::ResponseDTO response;
+
         if (!parsedRequest.contains("name"))
         {
             BadResponse badResponse;
@@ -73,8 +74,8 @@ namespace application
              return response;
          }
         response.code = 200;
-        response.body = "{'code': 200, 'body': {'id': " +
-            to_string(contactService::addContact(tx, requestDTO.name, requestDTO.number, requestDTO.address)) + "}}";
+        response.body = {{"id", contactService::addContact(tx, requestDTO.name, requestDTO.number, requestDTO.address)}};
+
 
         json jresponse = response;
 
@@ -97,8 +98,7 @@ namespace application
         requestDTO.id = otherId;
 
         response.code = 200;
-        response.body = "{'id': " +
-            to_string(callHistoryService::addCallHistory(tx,requestDTO.id, requestDTO.isIncoming)) + "}";
+        response.body = {{"id", callHistoryService::addCallHistory(tx,requestDTO.id, requestDTO.isIncoming)}};
 
         json jresponse = response;
 
@@ -114,8 +114,8 @@ namespace application
         callHistoryRepository::deleteCallHistoriesWithContactId(tx, requestDTO.contactId);
 
         response.code = 200;
-        response.body = "{'id': " +
-            to_string(contactService::deleteContact(tx, requestDTO.contactId)) + "}";
+        response.body = {{"id", contactService::deleteContact(tx, requestDTO.contactId)}};
+
         json jresponse = response;
 
         return jresponse;
@@ -128,8 +128,8 @@ namespace application
         auto requestDTO = request.template get<deleteCallDTO::RequestDeleteCall>();
 
         response.code = 200;
-        response.body = "{'id': " +
-            to_string(callHistoryService::deleteCallHistory(tx, requestDTO.callId)) + "}";
+        response.body = {{"id", callHistoryService::deleteCallHistory(tx, requestDTO.callId)}};
+
         json jresponse = response;
 
         return jresponse;
@@ -148,8 +148,8 @@ namespace application
         auto requestDTO = request.template get<editContactDTO::RequestEditContact>();
 
         response.code = 200;
-        response.body = "{'id': " +
-            to_string(contactService::editContact(tx, requestDTO.name, requestDTO.id)) + "}";
+        response.body = {{"id", contactService::editContact(tx, requestDTO.name, requestDTO.id)}};
+
         json jresponse = response;
 
         return jresponse;

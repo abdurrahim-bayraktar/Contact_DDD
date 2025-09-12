@@ -46,7 +46,8 @@ crow::response getCalls(pqxx::nontransaction& tx, const crow::request& req)
 
 crow::response addContact(pqxx::nontransaction& tx, const crow::request& req)
 {
-    json request = req.body;
+    json request = json::parse(req.body);
+
 
     json response = application::addContact(tx, request);
 
@@ -55,7 +56,7 @@ crow::response addContact(pqxx::nontransaction& tx, const crow::request& req)
 
 crow::response addCall(pqxx::nontransaction& tx, const crow::request& req)
 {
-    json request = req.body;
+    json request = json::parse(req.body);
     json response = application::addCallHistory(tx, request);
 
     return {response.dump()};
@@ -64,7 +65,7 @@ crow::response addCall(pqxx::nontransaction& tx, const crow::request& req)
 crow::response editContact(pqxx::nontransaction& tx, const crow::request& req)
 {
 
-    json request = req.body;
+    json request = json::parse(req.body);
     json response = application::editContact(tx, request);
 
     return {response.dump()};
@@ -74,7 +75,7 @@ crow::response deleteContact(pqxx::nontransaction& tx, const crow::request& req)
 {
     json parsedInfo = json::parse(req.body, nullptr, false);
 
-    json request = req.body;
+    json request = json::parse(req.body);
 
     json response = application::deleteContact(tx, request);
     return {response.dump()};
@@ -84,7 +85,7 @@ crow::response deleteContact(pqxx::nontransaction& tx, const crow::request& req)
 crow::response deleteCall(pqxx::nontransaction& tx, const crow::request& req)
 {
 
-    json request = req.body;
+    json request = json::parse(req.body);
 
     json response = application::deleteCallHistory(tx, request);
 
