@@ -10,18 +10,20 @@
 #include "../../Domain/contact/contact.hpp"
 using namespace std;
 
-
-class ResponseDTO
+namespace responseDTO
 {
-public:
-    int code;
-    string body;
-};
-
+    class ResponseDTO
+    {
+    public:
+        int code;
+        string body;
+        NLOHMANN_DEFINE_TYPE_INTRUSIVE(ResponseDTO, code, body)
+    };
+}
 struct ResponseGetContacts
 {
     explicit ResponseGetContacts(const vector<contact> &contacts): contacts(contacts) {}
-    int code;
+    int code{};
     vector<contact> contacts;
 };
 

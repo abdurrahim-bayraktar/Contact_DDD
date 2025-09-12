@@ -31,124 +31,52 @@ bool phoneNumberIsValid(const string& phoneNumber)
 
 crow::response getContacts(pqxx::nontransaction& tx, const crow::request& req)
 {
-    json contacts;
 
-    ResponseGetContacts responseDTO = application::getContacts(tx);
-
-    for (auto& contact : responseDTO.contacts)
-    {
-        contacts.push_back({
-            {"id", contact.id}, {"name", contact.name},
-            {"number", contact.number}, {"address", contact.address}
-        });
-    }
-
+    json contacts = application::getContacts(tx);
 
     return {contacts.dump()};
 }
 
 crow::response getCalls(pqxx::nontransaction& tx, const crow::request& req)
 {
-    json calls;
-
-    ResponseGetCallHistory responseDTO = application::getCallHistory(tx);
-
-    for (auto& call : responseDTO.callHistories)
-    {
-        calls.push_back({
-            {"id", call.callId}, {"contactID", call.otherContactId},
-            {"contactName", call.otherName}, {"time", call.date}
-        });
-    }
-
-
+    json calls = application::getCallHistory(tx);;
 
     return {calls.dump()};
 }
 
 crow::response addContact(pqxx::nontransaction& tx, const crow::request& req)
 {
+    json request = req.body;
 
+    json response = application::addContact(tx, request);
 
-    json parsedContact = json::parse(req.body, nullptr, false);
-    if (!parsedContact.contains("name"))
-    {
-        crow::response bad(400);
-        bad.write(R"({"error":"Invalid JSON. Expect {\"id\":number}."})");
-        return bad;
-    }
-    string number = parsedContact.at("number").get<std::string>();
-
-    if (!phoneNumberIsValid(number))
-    {
-        crow::response bad(400);
-        bad.write(R"({"error":"not a valid phone number."})");
-        return bad;
-    }
-
-    RequestAddContact requestDTO(parsedContact.at("name").get<std::string>(), number, parsedContact.at("address").get<std::string>());
-
-    ResponseDTO responseDto = application::addContact(tx, requestDTO);
-
-
-
-
-    crow::response response;
-    return response;
+    return {response.dump()};
 }
 
 crow::response addCall(pqxx::nontransaction& tx, const crow::request& req)
 {
+    json request = req.body;
+    json response = application::addCallHistory(tx, request);
 
-    json parsedCall = json::parse(req.body, nullptr, false);
-    if (!parsedCall.contains("number"))
-    {
-        crow::response bad(400);
-        bad.write(R"({"error":"Invalid JSON. Expect {\"number\":number}."})");
-        return bad;
-    }
-
-    RequestAddCall requestDTO(parsedCall.at("number").get<std::string>(), parsedCall.at("isIncoming").get<bool>());
-    ResponseDTO responseDTO = application::addCallHistory(tx, requestDTO);
-
-
-    crow::response response;
-    response.code = responseDTO.code;
-    response.body = responseDTO.body;
-    return response;
+    return {response.dump()};
 }
 
 crow::response editContact(pqxx::nontransaction& tx, const crow::request& req)
 {
 
-    json parsedInfo = json::parse(req.body, nullptr, false);
+    json request = req.body;
+    json response = application::editContact(tx, request);
 
-    if (!parsedInfo.contains("name"))
-    {
-        crow::response bad(400);
-        bad.write(R"({"error":"Invalid JSON. Expect {\"id\":number}."})");
-        return bad;
-    }
-
-    RequestEditContact requestDTO(parsedInfo.at("name").get<string>(), parsedInfo.at("contactId").get<int>());
-
-    ResponseDTO responseDTO = application::editContact(tx, requestDTO);
-
-    crow::response response;
-    response.code = responseDTO.code;
-    response.body = responseDTO.body;
-
-
-    return response;
+    return {response.dump()};
 }
 
 crow::response deleteContact(pqxx::nontransaction& tx, const crow::request& req)
 {
     json parsedInfo = json::parse(req.body, nullptr, false);
 
-    RequestDeleteContact requestDTO(parsedInfo.at("contactId").get<int>());
+    json request = req.body;
 
-    crow::response res = application::deleteContact(tx, requestDTO);
+    json response = application::deleteContact(tx, request);
 
 }
 
@@ -190,9 +118,10 @@ int main()
 
         auto conn = pool.acquire();
         const pqxx::nontransaction tx(*conn);
-        string action = eq.get_header_value("action");
+        string action = req.get_header_value("action");
 
         if(actionToFunction.find(action) == actionToFunction.end()){
+            crow::response bad(400);
             bad.write(R"({"error":"Invalid JSON. Expect {\"id\":number}."})");
             return bad;
         }

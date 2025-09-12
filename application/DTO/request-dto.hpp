@@ -29,11 +29,11 @@ struct RequestGetContacts
 {
 
 };
-namespace addCall
+namespace addCallDTO
 {
     struct RequestAddCall
     {
-
+        RequestAddCall();
         RequestAddCall(const string& number, const bool& isIncoming) :
             number(number), isIncoming(isIncoming){}
 
@@ -44,10 +44,11 @@ namespace addCall
     };
 }
 
-namespace deleteCall
+namespace deleteCallDTO
 {
     struct RequestDeleteCall
     {
+        RequestDeleteCall();
         explicit RequestDeleteCall(const int& callId): callId(callId){}
 
         int callId;
@@ -55,10 +56,11 @@ namespace deleteCall
     };
 }
 
-namespace AddContact
+namespace addContactDTO
 {
     struct RequestAddContact
     {
+        RequestAddContact();
         RequestAddContact(const string& name, const string& number, const string& address):
         name(name),number(number), address(address) {}
 
@@ -70,10 +72,11 @@ namespace AddContact
     };
 }
 
-namespace delteContact
+namespace deleteContactDTO
 {
     struct RequestDeleteContact
     {
+        RequestDeleteContact();
         explicit RequestDeleteContact(const int& contactId): contactId(contactId) {}
 
         int contactId;
@@ -82,10 +85,11 @@ namespace delteContact
     };
 }
 
-namespace EditContact
+namespace editContactDTO
 {
     struct RequestEditContact
     {
+        RequestEditContact();
         RequestEditContact(const string& name, const int& id): name(name), id(id) {}
 
         string name;
