@@ -17,7 +17,8 @@ namespace application
 
     static json getContacts(pqxx::nontransaction& tx)
     {
-        ResponseGetContacts responseDTO = contactService::getAllContact(tx);
+        ResponseGetContacts responseDTO;
+        responseDTO.contacts = contactService::getAllContact(tx);
         json contacts;
         for (auto& contact : responseDTO.contacts)
         {
@@ -31,7 +32,8 @@ namespace application
 
     inline json getCallHistory(pqxx::nontransaction& tx)
     {
-        ResponseGetCallHistory responseDTO = callHistoryService::getAllCallHistories(tx);
+        ResponseGetCallHistory responseDTO;
+        responseDTO.callHistories = callHistoryService::getAllCallHistories(tx);
 
         for (int i = 0; callHistory& call : responseDTO.callHistories)
         {
@@ -58,29 +60,33 @@ namespace application
         if (!parsedRequest.contains("name"))
         {
             response.code = 400;
-            response.body = R"({"error":"Invalid JSON. Expect {\"id\":number}."})";
+            response.body = R"({"error":"Invalid JSON. Expect {\"number\":number}."})";
+            return response;
 
         }
-        string number = parsedRequest.at("number").get<std::string>();
+        auto requestDTO = parsedRequest.template get<addContactDTO::RequestAddContact>();
+        requestDTO.number = parsedRequest.at("number").get<std::string>();
 
-         if (!validation::phoneNumberIsValid(number))
+         if (!validation::phoneNumberIsValid(requestDTO.number))
          {
              response.code = 400;
              response.body = R"({"error":"not a valid phone number."})";
+             return response;
          }
+        response.code = 200;
+        response.body = "{'code': 200, 'body': {'id': " +
+            to_string(contactService::addContact(tx, requestDTO.name, requestDTO.number, requestDTO.address)) + "}}";
 
-        auto requestDTO = parsedRequest.template get<addContactDTO::RequestAddContact>();
-        json jresponse =  contactService::addContact(tx, requestDTO);
+        json jresponse = response;
 
         return jresponse;
     };
 
     static json addCallHistory(pqxx::nontransaction& tx, json& request)
     {
-
+        responseDTO::ResponseDTO response;
         if (!request.contains("number"))
         {
-            responseDTO::ResponseDTO response;
             response.code = 400;
             response.body = R"({"error":"Invalid JSON. Expect {\"number\":number}."})";
             return response;
@@ -92,7 +98,12 @@ namespace application
 
         requestDTO.id = otherId;
 
-        json jresponse = callHistoryService::addCallHistory(tx,requestDTO);
+        response.code = 200;
+        response.body = "{'id': " +
+            to_string(callHistoryService::addCallHistory(tx,requestDTO.id, requestDTO.isIncoming)) + "}";
+
+        json jresponse = response;
+
         return jresponse;
 
     };
@@ -100,10 +111,14 @@ namespace application
     static json deleteContact(pqxx::nontransaction& tx, const json& request)
     {
 
+        responseDTO::ResponseDTO response;
         auto requestDTO = request.template get<deleteContactDTO::RequestDeleteContact>();
-        callHistoryRepository::deleteCallHistoriesWithContactId(tx, requestDTO);
+        callHistoryRepository::deleteCallHistoriesWithContactId(tx, requestDTO.contactId);
 
-        json jresponse = contactService::deleteContact(tx, requestDTO);
+        response.code = 200;
+        response.body = "{'id': " +
+            to_string(contactService::deleteContact(tx, requestDTO.contactId)) + "}";
+        json jresponse = response;
 
         return jresponse;
 
@@ -111,9 +126,13 @@ namespace application
 
     inline json deleteCallHistory(pqxx::nontransaction& tx, const json& request)
     {
+        responseDTO::ResponseDTO response;
         auto requestDTO = request.template get<deleteCallDTO::RequestDeleteCall>();
 
-        json jresponse = callHistoryService::deleteCallHistory(tx, requestDTO);
+        response.code = 200;
+        response.body = "{'id': " +
+            to_string(callHistoryService::deleteCallHistory(tx, requestDTO.callId)) + "}";
+        json jresponse = response;
 
         return jresponse;
     };
@@ -133,7 +152,7 @@ namespace application
 
         auto requestDTO = request.template get<editContactDTO::RequestEditContact>();
 
-        return contactService::editContact(tx, requestDTO);
+        return contactService::editContact(tx, requestDTO.name, requestDTO.id);
 
     };
 

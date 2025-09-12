@@ -12,32 +12,32 @@ using namespace std;
 namespace  callHistoryService
 {
 
-    inline ResponseGetCallHistory getAllCallHistories(pqxx::nontransaction& tx)
+    inline vector<callHistory> getAllCallHistories(pqxx::nontransaction& tx)
     {
-        return callHistoryRepository::getCallHistoryVector(tx);
+        return callHistoryRepository::getCallHistoryVector(tx); //vector of calls
     }
 
-    inline ResponseDTO addCallHistory(pqxx::nontransaction& tx, const RequestAddCall& request)
+    inline int addCallHistory(pqxx::nontransaction& tx, const int& id, const bool& isIncoming)
     {
-        const pqxx::params params = callHistoryFactory::createAddCallHistoryParams(request);
-        return callHistoryRepository::addCallHistory(tx, request, params);
+        const pqxx::params params = callHistoryFactory::createAddCallHistoryParams(id, isIncoming);
+        return callHistoryRepository::addCallHistory(tx, params); //id of new call
     };
 
-    inline crow::response deleteCallHistory(pqxx::nontransaction& tx, const RequestDeleteCall& requestDTO)
+    inline int deleteCallHistory(pqxx::nontransaction& tx, const int& callId)
     {
-        crow::response res;
-        if (callHistoryRepository::deleteCallHistory(tx, requestDTO) == 0)
-        {
-            res.code = 404;
-            res.body =  "ERROR: id is not in db";
-            return res;
-        }
-        else
-        {
-            res.code = 200;
-            res.body =  "200 OK";
-            return res;
-        }
+        return callHistoryRepository::deleteCallHistory(tx, callId); //number of rows changed
+        // if (callHistoryRepository::deleteCallHistory(tx, callId) == 0)
+        // {
+        //     res.code = 404;
+        //     res.body =  "ERROR: id is not in db";
+        //     return res;
+        // }
+        // else
+        // {
+        //     res.code = 200;
+        //     res.body =  "200 OK";
+        //     return res;
+        // }
     }
 };
 #endif // CALLHISTORY_SERVICE_HPP

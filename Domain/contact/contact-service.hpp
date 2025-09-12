@@ -17,28 +17,29 @@ namespace contactService
 
 
 
-    inline ResponseGetContacts getAllContact(pqxx::nontransaction& tx)
+    inline vector<contact> getAllContact(pqxx::nontransaction& tx)
     {
 
         return contactRepository::getAllRows(tx);
     };
 
-    inline ResponseDTO addContact(pqxx::nontransaction& tx, RequestAddContact& dto)
+    inline int addContact(pqxx::nontransaction& tx, const string& name, const string& number, const string& address)
     {
-        pqxx::params params = contactFactory::createAddContactParam(dto);
+        pqxx::params params = contactFactory::createAddContactParam(name, number, address);
         return contactRepository::addContact(tx, params);
     };
 
-//deprecated
+
+
     inline string getNameById(pqxx::nontransaction& tx, const int id)
     {
         return contactRepository::getNameById(tx, id);
     }
-//deprecated
-    inline int getIdByNumber(pqxx::nontransaction& tx, const string& number)
-    {
-        return contactRepository::getIdByNumber(tx, number);
-    }
+
+     inline int getIdByNumber(pqxx::nontransaction& tx, const string& number)
+     {
+         return contactRepository::getIdByNumber(tx, number);
+     }
 
     inline vector<int> getIdsByNumbers(pqxx::nontransaction& tx, const vector<string>& numbers)
     {
@@ -54,50 +55,51 @@ namespace contactService
 
     }
 
-    inline ResponseDTO editContact(pqxx::nontransaction& tx, const RequestEditContact& requestDTO)
+    inline int editContact(pqxx::nontransaction& tx, const string& name, const int& id)
     {
-        ResponseDTO res;
-        if (contactRepository::editContact(tx, requestDTO) == 0)
-        {
-            res.code = 404;
-            res.body =  "ERROR: id is not in db";
-            return res;
-        }
-        else
-        {
-            res.code = 200;
-            res.body =  "200 OK";
-            return res;
-        }
+
+        return contactRepository::editContact(tx, name, id); // returns the number of changed rows
+        // if (contactRepository::editContact(tx, name, id) == 0)
+        // {
+        //     res.code = 404;
+        //     res.body =  "ERROR: id is not in db";
+        //     return res;
+        // }
+        // else
+        // {
+        //     res.code = 200;
+        //     res.body =  "200 OK";
+        //     return res;
+        // }
     }
 
-    inline crow::response deleteContact(pqxx::nontransaction& tx, const RequestDeleteContact& requestDTO)
+    inline int deleteContact(pqxx::nontransaction& tx, const int& contactId)
     {
-        crow::response res;
-        if (contactRepository::deleteContact(tx, requestDTO) == 0 )
-        {
-            res.code = 404;
-            res.body =  "ERROR: id is not in db";
-            return res;
-        }
-        else
-        {
-            res.code = 200;
-            res.body =  "200 OK";
-            return res;
-        }
+        return contactRepository::deleteContact(tx, contactId);
+        // if (contactRepository::deleteContact(tx, requestDTO) == 0 )
+        // {
+        //     res.code = 404;
+        //     res.body =  "ERROR: id is not in db";
+        //     return res;
+        // }
+        // else
+        // {
+        //     res.code = 200;
+        //     res.body =  "200 OK";
+        //     return res;
+        // }
     }
 
     //deprecated
-    [[maybe_unused]] inline void getNamesByIds(pqxx::nontransaction& tx, unordered_map<int, string>& names)
-    {
-        const pqxx::params params = contactFactory::createGetNamesBydIdsParam(names);
-        contactRepository::getNamesByIds(tx, names, params);
-        if (names.empty())
-        {
-            cout << "ERROR: NO NAME BY IDS";
-        }
-    }
+    // [[maybe_unused]] inline void getNamesByIds(pqxx::nontransaction& tx, unordered_map<int, string>& names)
+    // {
+    //     const pqxx::params params = contactFactory::createGetNamesBydIdsParam(names);
+    //     contactRepository::getNamesByIds(tx, names, params);
+    //     if (names.empty())
+    //     {
+    //         cout << "ERROR: NO NAME BY IDS";
+    //     }
+    // }
 };
 
 #endif // CONTACT_SERVICE_HPP

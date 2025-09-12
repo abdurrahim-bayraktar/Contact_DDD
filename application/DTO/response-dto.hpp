@@ -22,6 +22,7 @@ namespace responseDTO
 }
 struct ResponseGetContacts
 {
+    ResponseGetContacts();
     explicit ResponseGetContacts(const vector<contact> &contacts): contacts(contacts) {}
     int code{};
     vector<contact> contacts;
@@ -29,6 +30,7 @@ struct ResponseGetContacts
 
 struct ResponseGetCallHistory
 {
+    ResponseGetCallHistory();
     explicit ResponseGetCallHistory(const vector<callHistory> &callHistory): callHistories(callHistory) {}
     int code;
     vector<callHistory> callHistories;

@@ -18,26 +18,25 @@ namespace contactRepository
 
     };
 
-    inline json addContact(pqxx::nontransaction& tx, const pqxx::params& params)
+    inline int addContact(pqxx::nontransaction& tx, const pqxx::params& params)
     {
         pqxx::result result = tx.exec("INSERT INTO contacts (Name, Number, addrress) VALUES($1, $2, $3) RETURNING ContactID", params);
-        string responseString= "{'code': 200, 'body': {'id': " + to_string(result[0][0].as<int>()) + "}}";
-        json response = responseString;
-        return response;
+        // string responseString= "{'code': 200, 'body': {'id': " + to_string(result[0][0].as<int>()) + "}}";
+        // json response = responseString;
+        return result[0][0].as<int>();
 
     }
 
-//deprecated
-    inline string getNameById(pqxx::nontransaction& tx, const int id)
-    {
+     inline string getNameById(pqxx::nontransaction& tx, const int id)
+     {
         pqxx::params param {id};
         pqxx::result name = tx.exec("SELECT Name FROM contacts where ContactID = $1 LIMIT 1", param);
 
-        return get<0>(name[0].as<string>());
-    }
+         return get<0>(name[0].as<string>());
+     }
 
-//deprecated
-    inline int getIdByNumber(pqxx::nontransaction& tx, const string& number)
+
+     inline int getIdByNumber(pqxx::nontransaction& tx, const string& number)
     {
         const pqxx::params param{number};
         const pqxx::result Id = tx.exec("SELECT ContactID FROM contacts WHERE Number = $1", param);
@@ -53,18 +52,18 @@ namespace contactRepository
         return get<0>(Id[0].as<int>());
     }
 
-    inline int editContact(pqxx::nontransaction& tx, const RequestEditContact& requestDTO)
+    inline int editContact(pqxx::nontransaction& tx, const string& name, const int& id)
     {
-        const pqxx::params params = contactFactory::createEditContactParams(requestDTO.name, requestDTO.id);
+        const pqxx::params params = contactFactory::createEditContactParams(name, id);
         const pqxx::result rows = tx.exec("UPDATE contacts SET Name = $1 WHERE ContactID = $2", params);
 
         return rows.affected_rows();
 
     }
 
-    inline int deleteContact(pqxx::nontransaction& tx, const RequestDeleteContact& requestDTO)
+    inline int deleteContact(pqxx::nontransaction& tx, const int& contactId)
     {
-        const pqxx::params param {requestDTO.contactId};
+        const pqxx::params param {contactId};
         pqxx::result rows = tx.exec("DELETE FROM contacts WHERE contactID = $1", param);
 
         return rows.affected_rows();
