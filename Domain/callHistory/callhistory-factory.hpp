@@ -25,9 +25,9 @@ namespace callHistoryFactory
         return callHistories;
     }
 
-    inline pqxx::params createAddCallHistoryParams(const RequestAddCall& requestDTO)
+    inline pqxx::params createAddCallHistoryParams(const int& id, const bool& isIncoming)
     {
-        pqxx::params params{requestDTO.id, requestDTO.isIncoming};
+        pqxx::params params{id, isIncoming};
         return params;
     }
 

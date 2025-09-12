@@ -4,24 +4,25 @@
 #include "contact-factory.hpp"
 #include "../../application/DTO/request-dto.hpp"
 #include "../../application/DTO/response-dto.hpp"
+#include <nlohmann/json.hpp>
+
+using json = nlohmann::json;
 
 namespace contactRepository
 {
-    inline ResponseGetContacts getAllRows(pqxx::nontransaction& tx)
+    inline vector<contact> getAllRows(pqxx::nontransaction& tx)
     {
         pqxx::result rows = tx.exec("SELECT * FROM contacts");
-        ResponseGetContacts responseDTO(contactFactory::createContactVector(rows));
+        return contactFactory::createContactVector(rows);
 
-        return responseDTO;
+
     };
 
-    inline ResponseDTO addContact(pqxx::nontransaction& tx, const pqxx::params& params)
+    inline json addContact(pqxx::nontransaction& tx, const pqxx::params& params)
     {
         pqxx::result result = tx.exec("INSERT INTO contacts (Name, Number, addrress) VALUES($1, $2, $3) RETURNING ContactID", params);
-        ResponseDTO response;
-        response.code = 200;
-        response.body = "{{'id': " + to_string(result[0][0].as<int>()) + "}}";
-
+        string responseString= "{'code': 200, 'body': {'id': " + to_string(result[0][0].as<int>()) + "}}";
+        json response = responseString;
         return response;
 
     }

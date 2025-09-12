@@ -19,7 +19,8 @@ add_executable(Contact_DDD main.cpp
         application/application.hpp
         Domain/callHistory/value-objects/contact-info.hpp
         application/DTO/request-dto.hpp
-        application/DTO/response-dto.hpp)
+        application/DTO/response-dto.hpp
+        validation/validation.hpp)
 
 target_link_libraries(Contact_DDD PRIVATE libpqxx::pqxx)
 target_link_libraries(Contact_DDD PRIVATE Crow::Crow)

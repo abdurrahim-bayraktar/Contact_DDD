@@ -11,11 +11,11 @@
 
 using json = nlohmann::json;
 
-bool phoneNumberIsValid(const string& phoneNumber)
-{
-    regex patern("^\\+[0-9]{2}-[0-9]{3}-[0-9]{3}-[0-9]{2}-[0-9]{2}$");
-    return regex_match(phoneNumber, patern);
-}
+// bool phoneNumberIsValid(const string& phoneNumber)
+// {
+//     regex patern("^\\+[0-9]{2}-[0-9]{3}-[0-9]{3}-[0-9]{2}-[0-9]{2}$");
+//     return regex_match(phoneNumber, patern);
+// }
 
 // void tempUtility(pqxx::work& tx)
 // {
@@ -77,19 +77,19 @@ crow::response deleteContact(pqxx::nontransaction& tx, const crow::request& req)
     json request = req.body;
 
     json response = application::deleteContact(tx, request);
+    return {response.dump()};
 
 }
 
 crow::response deleteCall(pqxx::nontransaction& tx, const crow::request& req)
 {
 
-    json parsedInfo = json::parse(req.body, nullptr, false);
-    RequestDeleteCall requestDTO(parsedInfo.at("callId").get<int>());
-    crow::response res = application::deleteCallHistory(tx, requestDTO);
+    json request = req.body;
 
+    json response = application::deleteCallHistory(tx, request);
 
+    return {response.dump()};
 
-    return res;
 }
 
 
