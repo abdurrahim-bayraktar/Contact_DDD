@@ -190,9 +190,18 @@ int main()
 
         auto conn = pool.acquire();
         const pqxx::nontransaction tx(*conn);
-        crow::response res =  actionToFunction.at(req.get_header_value("action"))(tx, req);
+        string action = eq.get_header_value("action");
 
+        if(actionToFunction.find(action) == actionToFunction.end()){
+            bad.write(R"({"error":"Invalid JSON. Expect {\"id\":number}."})");
+            return bad;
+        }
+        else
+        {
+        crow::response res =  actionToFunction.at(req.get_header_value("action"))(tx, req);
         return res;
+        }
+
     });
 
     app.port(8080).multithreaded().run();
