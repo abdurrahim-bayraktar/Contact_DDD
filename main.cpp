@@ -117,7 +117,7 @@ int main()
     {
 
         auto conn = pool.acquire();
-        const pqxx::nontransaction tx(*conn);
+        pqxx::nontransaction tx(*conn);
         string action = req.get_header_value("action");
 
         if(actionToFunction.find(action) == actionToFunction.end()){

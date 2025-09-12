@@ -59,9 +59,8 @@ namespace application
         responseDTO::ResponseDTO response;
         if (!parsedRequest.contains("name"))
         {
-            response.code = 400;
-            response.body = R"({"error":"Invalid JSON. Expect {\"number\":number}."})";
-            return response;
+            BadResponse badResponse;
+            return badResponse;
 
         }
         auto requestDTO = parsedRequest.template get<addContactDTO::RequestAddContact>();
@@ -87,9 +86,8 @@ namespace application
         responseDTO::ResponseDTO response;
         if (!request.contains("number"))
         {
-            response.code = 400;
-            response.body = R"({"error":"Invalid JSON. Expect {\"number\":number}."})";
-            return response;
+            BadResponse badResponse;
+            return badResponse;
         }
 
         auto requestDTO = request.template get<addCallDTO::RequestAddCall>();
@@ -139,20 +137,22 @@ namespace application
 
     static json editContact(pqxx::nontransaction& tx, const json& request)
     {
+        responseDTO::ResponseDTO response;
         if (!request.contains("name"))
         {
-            responseDTO::ResponseDTO response;
-            response.code = 400;
-            response.body = R"({"error":"Invalid JSON. Expect {\"number\":number}."})";
-
-            return response;
+            BadResponse badResponse;
+            return badResponse;
 
         }
 
-
         auto requestDTO = request.template get<editContactDTO::RequestEditContact>();
 
-        return contactService::editContact(tx, requestDTO.name, requestDTO.id);
+        response.code = 200;
+        response.body = "{'id': " +
+            to_string(contactService::editContact(tx, requestDTO.name, requestDTO.id)) + "}";
+        json jresponse = response;
+
+        return jresponse;
 
     };
 

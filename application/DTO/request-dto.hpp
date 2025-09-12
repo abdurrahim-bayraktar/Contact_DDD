@@ -33,7 +33,7 @@ namespace addCallDTO
 {
     struct RequestAddCall
     {
-        RequestAddCall();
+        RequestAddCall() =default;
         RequestAddCall(const string& number, const bool& isIncoming) :
             number(number), isIncoming(isIncoming){}
 
@@ -48,7 +48,7 @@ namespace deleteCallDTO
 {
     struct RequestDeleteCall
     {
-        RequestDeleteCall();
+        RequestDeleteCall() =default;
         explicit RequestDeleteCall(const int& callId): callId(callId){}
 
         int callId;
@@ -60,7 +60,7 @@ namespace addContactDTO
 {
     struct RequestAddContact
     {
-        RequestAddContact();
+        RequestAddContact() = default;
         RequestAddContact(const string& name, const string& number, const string& address):
         name(name),number(number), address(address) {}
 
@@ -76,7 +76,7 @@ namespace deleteContactDTO
 {
     struct RequestDeleteContact
     {
-        RequestDeleteContact();
+        RequestDeleteContact() =default;
         explicit RequestDeleteContact(const int& contactId): contactId(contactId) {}
 
         int contactId;
@@ -89,7 +89,7 @@ namespace editContactDTO
 {
     struct RequestEditContact
     {
-        RequestEditContact();
+        RequestEditContact() =default;
         RequestEditContact(const string& name, const int& id): name(name), id(id) {}
 
         string name;
