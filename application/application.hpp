@@ -148,7 +148,7 @@ namespace application
         auto requestDTO = request.template get<editContactDTO::RequestEditContact>();
 
         response.code = 200;
-        response.body = {{"id", contactService::editContact(tx, requestDTO.name, requestDTO.id)}};
+        response.body = {{"number edited", contactService::editContact(tx, requestDTO.name, requestDTO.id)}};
 
         json jresponse = response;
 

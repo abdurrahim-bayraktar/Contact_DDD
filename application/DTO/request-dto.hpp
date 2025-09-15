@@ -40,7 +40,7 @@ namespace addCallDTO
         string number;
         int id{0};
         bool isIncoming;
-        NLOHMANN_DEFINE_TYPE_INTRUSIVE(RequestAddCall, number, id, isIncoming)
+        NLOHMANN_DEFINE_TYPE_INTRUSIVE(RequestAddCall, number, isIncoming)
     };
 }
 
@@ -93,7 +93,7 @@ namespace editContactDTO
         RequestEditContact(const string& name, const int& id): name(name), id(id) {}
 
         string name;
-        int id;
+        int id{};
 
         NLOHMANN_DEFINE_TYPE_INTRUSIVE(RequestEditContact, name, id)
     };
