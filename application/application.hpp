@@ -112,9 +112,14 @@ namespace application
         responseDTO::ResponseDTO response;
         auto requestDTO = request.template get<deleteContactDTO::RequestDeleteContact>();
         callHistoryRepository::deleteCallHistoriesWithContactId(tx, requestDTO.contactId);
-
+        int rowsChanged = contactService::deleteContact(tx, requestDTO.contactId);
+        if (rowsChanged == 0)
+        {
+            BadResponse badResponse;
+            return badResponse;
+        }
         response.code = 200;
-        response.body = {{"id", contactService::deleteContact(tx, requestDTO.contactId)}};
+        response.body = {{"rows changed", rowsChanged}};
 
         json jresponse = response;
 
@@ -127,8 +132,14 @@ namespace application
         responseDTO::ResponseDTO response;
         auto requestDTO = request.template get<deleteCallDTO::RequestDeleteCall>();
 
+        int rowsChanged = callHistoryService::deleteCallHistory(tx, requestDTO.callId);
+        if (rowsChanged == 0)
+        {
+            BadResponse badResponse;
+            return badResponse;
+        }
         response.code = 200;
-        response.body = {{"id", callHistoryService::deleteCallHistory(tx, requestDTO.callId)}};
+        response.body = {{"rows changed", rowsChanged}};
 
         json jresponse = response;
 
@@ -147,8 +158,14 @@ namespace application
 
         auto requestDTO = request.template get<editContactDTO::RequestEditContact>();
 
+        int rowsChanged = contactService::editContact(tx, requestDTO.name, requestDTO.id);
+        if (rowsChanged == 0 )
+        {
+            BadResponse badResponse;
+            return badResponse;
+        }
         response.code = 200;
-        response.body = {{"number edited", contactService::editContact(tx, requestDTO.name, requestDTO.id)}};
+        response.body = {{"rows edited", rowsChanged}};
 
         json jresponse = response;
 
